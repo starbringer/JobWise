@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% block title %}{{ profile_name | capitalize }} Profile — Job Finder{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{{ url_for('index') }}">Profiles</a>
+  <span class="breadcrumb-sep" aria-hidden="true">›</span>
+  <a href="{{ url_for('profile_jobs', name=profile_name) }}">{{ profile_name | capitalize }}</a>
+  <span class="breadcrumb-sep" aria-hidden="true">›</span>
+  <span>Profile</span>
+</div>
+
+<div class="page-header">
+  <div class="header-row">
+    <div>
+      <h1>{{ profile_name | capitalize }}'s Profile</h1>
+      {% if profile.generated_at %}<p class="subtitle">Last parsed {{ profile.generated_at }}</p>{% endif %}
+    </div>
+    <form method="post" action="{{ url_for('sync_profile', name=profile_name) }}" onsubmit="this.querySelector('button').textContent='Syncing…'; this.querySelector('button').disabled=true;">
+      <button type="submit" class="btn-sync" title="Re-parse your .txt file and add any missing items (nothing is ever removed)">↻ Sync from file</button>
+    </form>
+  </div>
+</div>
+
+{% if request.args.get('msg') %}
+<div class="flash-msg">{{ request.args.get('msg') }}</div>
+{% endif %}
+
+{# ── Macro: editable tag list ────────────────────────────────── #}
+{% macro tag_list(field, items, placeholder, css_class='') %}
+<div class="tag-list">
+  {% for item in (items or []) %}
+  <span class="tag {{ css_class }}">
+    {{ item }}
+    <form method="post" action="{{ url_for('update_profile_field', name=profile_name) }}" style="display:inline;margin:0;" data-xhr="1">
+      <input type="hidden" name="field" value="{{ field }}">
+      <input type="hidden" name="action" value="remove">
+      <input type="hidden" name="value" value="{{ item }}">
+      <button type="submit" class="tag-remove" title="Remove">×</button>
+    </form>
+  </span>
+  {% endfor %}
+</div>
+<form method="post" action="{{ url_for('update_profile_field', name=profile_name) }}" class="add-inline-form" data-xhr="1">
+  <input type="hidden" name="field" value="{{ field }}">
+  <input type="hidden" name="action" value="add">
+  <input type="text" name="value" placeholder="{{ placeholder }}" class="add-inline-input" required>
+  <button type="submit" class="btn-small">Add</button>
+</form>
+{% endmacro %}
+
+{# ── Macro: scalar inline edit ───────────────────────────────── #}
+{% macro scalar_field(field, value, input_type='text', placeholder='', options=none) %}
+<form method="post" action="{{ url_for('update_profile_field', name=profile_name) }}" class="scalar-form" data-xhr="1">
+  <input type="hidden" name="field" value="{{ field }}">
+  <input type="hidden" name="action" value="set">
+  {% if options %}
+  <select name="value" class="scalar-input scalar-select" onchange="this.form.requestSubmit()">
+    <option value="null"{% if not value %} selected{% endif %}>—</option>
+    {% for opt in options %}
+    <option value="{{ opt }}"{% if value == opt %} selected{% endif %}>{{ opt }}</option>
+    {% endfor %}
+  </select>
+  {% else %}
+  <input type="{{ input_type }}" name="value" value="{{ value or '' }}" placeholder="{{ placeholder }}" class="scalar-input">
+  <button type="submit" class="btn-small">Save</button>
+  {% endif %}
+</form>
+{% endmacro %}
+
+<div class="profile-detail">
+
+  {# ── Job Titles ─────────────────────────────────────────────── #}
+  <div class="profile-section">
+    <h3>Job Titles</h3>
+    <p class="section-hint">Used to enrich search queries and pre-filter irrelevant listings before AI scoring.</p>
+    {{ tag_list('target_job_titles', profile.target_job_titles, 'Add a job title…') }}
+  </div>
+
+  {# ── Locations & Work Style ─────────────────────────────────── #}
+  <div class="profile-section two-col">
+    <div>
+      <h3>Preferred Locations</h3>
+      {{ tag_list('preferred_locations', profile.preferred_locations, 'City, ST or remote…', 'tag-location') }}
+    </div>
+    <div>
+      <h3>Work Style</h3>
+      {{ scalar_field('work_style', profile.work_style, options=['remote','hybrid','on-site','flexible']) }}
+    </div>
+  </div>
+
+  {# ── Salary & Experience ────────────────────────────────────── #}
+  <div class="profile-section two-col">
+    <div>
+      <h3>Minimum Salary (annual USD)</h3>
+      <div class="scalar-row">
+        {{ scalar_field('salary_min', profile.salary_min, 'number', 'e.g. 120000') }}
+      </div>
+    </div>
+    <div>
+      <h3>Years of Experience</h3>
+      <div class="scalar-row">
+        {{ scalar_field('years_experience_total', profile.years_experience_total, 'number', 'e.g. 8') }}
+      </div>
+    </div>
+  </div>
+
+  {# ── Summary ────────────────────────────────────────────────── #}
+  <div class="profile-section">
+    <h3>Background Summary</h3>
+    <div class="summary-editable"
+         contenteditable="true"
+         data-field="experience_summary"
+         data-profile="{{ profile_name }}"
+         onblur="saveEditableField(this)"
+         role="textbox"
+         aria-multiline="true"
+         aria-label="Background summary"
+         spellcheck="true">{{ profile.experience_summary or '' }}</div>
+    <span class="save-indicator" id="summary-saved" style="display:none">✓ Saved</span>
+  </div>
+
+  {# ── Skills ─────────────────────────────────────────────────── #}
+  <div class="profile-section two-col">
+    <div>
+      <h3>Technical Skills</h3>
+      {{ tag_list('technical_skills', profile.technical_skills, 'Add a skill…', 'tag-skill') }}
+    </div>
+    <div>
+      <h3>Soft Skills</h3>
+      {{ tag_list('soft_skills', profile.soft_skills, 'Add a skill…', 'tag-soft') }}
+    </div>
+  </div>
+
+  {# ── Must / Nice ────────────────────────────────────────────── #}
+  <div class="profile-section two-col">
+    <div>
+      <h3>Must Haves</h3>
+      {{ tag_list('must_haves', profile.must_haves, 'Add a requirement…') }}
+    </div>
+    <div>
+      <h3>Nice to Haves</h3>
+      {{ tag_list('nice_to_haves', profile.nice_to_haves, 'Add a preference…', 'tag-nice') }}
+    </div>
+  </div>
+
+  {# ── Exclusions ─────────────────────────────────────────────── #}
+  <div class="profile-section">
+    <h3>Exclusions</h3>
+    <p class="section-hint">Role types, company conditions, or industries you want to avoid.</p>
+    {{ tag_list('exclusions', profile.exclusions, 'Add an exclusion…', 'tag-exclusion') }}
+  </div>
+
+  {# ── Target Companies ───────────────────────────────────────── #}
+  <div class="profile-section">
+    <h3>Target Companies</h3>
+    <p class="section-hint">Companies you're interested in (soft preference — always searched).</p>
+    {{ tag_list('target_companies', profile.target_companies, 'Add a company…', 'tag-company') }}
+  </div>
+
+  {# ── Hard Requirements ──────────────────────────────────────── #}
+  <div class="profile-section">
+    <h3>Hard Requirements</h3>
+    <p class="section-hint">Binary filters applied before AI scoring. Jobs violating these are automatically discarded.</p>
+    <div class="hard-req-grid">
+      <div>
+        <h4>Required Job Titles</h4>
+        {{ tag_list('hard_requirements.job_titles', profile.hard_requirements.job_titles if profile.hard_requirements else [], 'Add a title…') }}
+      </div>
+      <div>
+        <h4>Excluded Job Titles</h4>
+        <p class="section-hint">Jobs whose title contains any of these (case-insensitive) are hard-filtered out.</p>
+        {{ tag_list('hard_requirements.exclude_titles', profile.hard_requirements.exclude_titles if profile.hard_requirements else [], 'e.g. engineering manager…', 'tag-exclusion') }}
+      </div>
+      <div>
+        <h4>Excluded Companies</h4>
+        {{ tag_list('hard_requirements.company_exclude', profile.hard_requirements.company_exclude if profile.hard_requirements else [], 'Add a company…', 'tag-exclusion') }}
+      </div>
+      <div>
+        <h4>Country</h4>
+        <p class="section-hint">Jobs outside these countries are filtered out (unless fully remote)</p>
+        {{ tag_list('hard_requirements.country', profile.hard_requirements.country if profile.hard_requirements else [], 'Add a country…', 'tag-location') }}
+      </div>
+      <div>
+        <h4>Allowed On-site Locations</h4>
+        <p class="section-hint">Jobs must be either fully remote OR in one of these areas. Leave empty if willing to relocate anywhere.</p>
+        {{ tag_list('hard_requirements.locations', profile.hard_requirements.locations if profile.hard_requirements else [], 'Add a location (e.g. California, Bay Area)…', 'tag-location') }}
+      </div>
+      <div>
+        <h4>Remote Type</h4>
+        {{ scalar_field('hard_requirements.remote_type', (profile.hard_requirements.remote_type if profile.hard_requirements else None), options=['remote','hybrid','on-site']) }}
+      </div>
+      <div>
+        <h4>Employment Type</h4>
+        {{ scalar_field('hard_requirements.employment_type', (profile.hard_requirements.employment_type if profile.hard_requirements else None), options=['FULL_TIME','CONTRACT','PART_TIME']) }}
+      </div>
+      <div>
+        <h4>Salary Floor (annual USD)</h4>
+        {{ scalar_field('hard_requirements.salary_min', (profile.hard_requirements.salary_min if profile.hard_requirements else None), 'number', 'e.g. 100000') }}
+      </div>
+      <div>
+        <h4>Excluded Industries</h4>
+        {{ tag_list('hard_requirements.exclude_industries', profile.hard_requirements.exclude_industries if profile.hard_requirements else [], 'Add an industry…', 'tag-exclusion') }}
+      </div>
+      <div>
+        <h4>Excluded Company Types</h4>
+        <p class="section-hint">e.g. agency, staffing, gambling</p>
+        {{ tag_list('hard_requirements.exclude_company_types', profile.hard_requirements.exclude_company_types if profile.hard_requirements else [], 'Add a type…', 'tag-exclusion') }}
+      </div>
+      <div>
+        <h4>Has Security Clearance</h4>
+        <p class="section-hint">If <strong>No</strong>, jobs requiring federal clearance are filtered out before AI scoring</p>
+        {% set _hc = profile.hard_requirements.has_clearance if profile.hard_requirements else None %}
+        {% set _hc_str = 'true' if _hc == true else ('false' if _hc == false else None) %}
+        {{ scalar_field('hard_requirements.has_clearance', _hc_str, options=['true','false']) }}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+{% block title %}Job Database — Job Finder{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="header-row">
+    <h1>Job Database</h1>
+    <span class="db-total-badge">{{ total }} job{{ 's' if total != 1 else '' }}</span>
+  </div>
+  <p class="subtitle">All raw jobs fetched from every source, unfiltered.</p>
+</div>
+
+<!-- Source stats strip -->
+{% if source_counts %}
+<div class="db-source-strip">
+  {% for src, cnt in source_counts.items() %}
+  <a href="?q={{ search }}&remote={{ remote }}&sort={{ sort_by }}&has_salary={{ '1' if has_salary else '' }}&posted_after={{ posted_after }}&profile={{ profile_filter }}&missing_info={{ '1' if missing_info else '' }}&has_score={{ '1' if has_score else '' }}&source={{ src }}"
+     class="db-source-chip {% if source == src %}active{% endif %}">
+    <span class="db-source-chip-name">{{ src }}</span>
+    <span class="db-source-chip-count">{{ cnt }}</span>
+  </a>
+  {% endfor %}
+  {% if source %}
+  <a href="?q={{ search }}&remote={{ remote }}&sort={{ sort_by }}&has_salary={{ '1' if has_salary else '' }}&posted_after={{ posted_after }}&profile={{ profile_filter }}&missing_info={{ '1' if missing_info else '' }}&has_score={{ '1' if has_score else '' }}"
+     class="db-source-chip db-source-chip-clear">✕ clear source</a>
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- Search & filter bar -->
+<form method="get" class="db-filter-bar" id="db-filter-form">
+  <!-- Row 1: search + source hidden + submit -->
+  <div class="db-filter-row db-filter-row-main">
+    <div class="db-search-wrap">
+      <svg class="db-search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="8.5" cy="8.5" r="5.5"/><path d="M15 15l-3-3"/>
+      </svg>
+      <input type="text" name="q" value="{{ search }}" placeholder="Search title or company…"
+             class="db-search-input" autocomplete="off" id="db-search-input">
+      {% if search %}<button type="button" class="db-search-clear" onclick="clearSearch()">✕</button>{% endif %}
+    </div>
+    <input type="hidden" name="source" value="{{ source }}">
+    <input type="hidden" name="sort" value="{{ sort_by }}">
+
+    <button type="submit" class="btn btn-primary">Search</button>
+  </div>
+
+  <!-- Row 2: filter chips -->
+  <div class="db-filter-row db-filter-chips">
+
+    <!-- Remote type -->
+    <div class="db-filter-group">
+      <span class="db-filter-group-label">Remote</span>
+      <select name="remote" class="db-select" onchange="this.form.submit()">
+        <option value="">Any</option>
+        {% for rt in remote_types %}
+        <option value="{{ rt }}" {% if remote == rt %}selected{% endif %}>{{ rt | capitalize }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Profile association -->
+    <div class="db-filter-group">
+      <span class="db-filter-group-label">Profile</span>
+      <select name="profile" class="db-select" onchange="this.form.submit()">
+        <option value="">Any</option>
+        <option value="none" {% if profile_filter == 'none' %}selected{% endif %}>Unassociated</option>
+        {% for pname in all_profiles %}
+        <option value="{{ pname }}" {% if profile_filter == pname %}selected{% endif %}>{{ pname | capitalize }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Posted after -->
+    <div class="db-filter-group">
+      <span class="db-filter-group-label">Posted after</span>
+      <input type="date" name="posted_after" value="{{ posted_after }}" class="db-date-input"
+             onchange="this.form.submit()">
+    </div>
+
+    <!-- Toggles -->
+    <label class="db-toggle-chip {% if has_salary %}active{% endif %}">
+      <input type="checkbox" name="has_salary" value="1" {% if has_salary %}checked{% endif %}
+             onchange="this.form.submit()" style="display:none">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4v8M6 5.5h3a1.5 1.5 0 010 3H7a1.5 1.5 0 000 3h3.5"/></svg>
+      Has salary
+    </label>
+
+    <label class="db-toggle-chip {% if missing_info %}active{% endif %}">
+      <input type="checkbox" name="missing_info" value="1" {% if missing_info %}checked{% endif %}
+             onchange="this.form.submit()" style="display:none">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v4M8 11v1"/></svg>
+      Missing info
+    </label>
+
+    <label class="db-toggle-chip {% if has_score %}active{% endif %}">
+      <input type="checkbox" name="has_score" value="1" {% if has_score %}checked{% endif %}
+             onchange="this.form.submit()" style="display:none">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12l3-4 3 3 2-5 3 6"/></svg>
+      AI scored
+    </label>
+
+    <!-- Sort -->
+    <div class="db-filter-group db-sort-group">
+      <span class="db-filter-group-label">Sort</span>
+      {% for val, label in [('date_found','Found'),('date_posted','Posted'),('company','Company'),('title','Title')] %}
+      <a href="?q={{ search }}&source={{ source }}&remote={{ remote }}&has_salary={{ '1' if has_salary else '' }}&posted_after={{ posted_after }}&profile={{ profile_filter }}&missing_info={{ '1' if missing_info else '' }}&has_score={{ '1' if has_score else '' }}&sort={{ val }}"
+         class="sort-opt {% if sort_by == val %}active{% endif %}">{{ label }}</a>
+      {% endfor %}
+    </div>
+
+    <!-- Clear all filters -->
+    {% if search or source or remote or has_salary or posted_after or profile_filter or missing_info or has_score %}
+    <a href="?" class="db-clear-all">✕ Clear all</a>
+    {% endif %}
+  </div>
+</form>
+
+<!-- Results -->
+{% if jobs %}
+<div class="db-job-list">
+  {% for job in jobs %}
+  {% set assoc = profile_map.get(job.job_key, []) %}
+  <div class="db-job-card" id="dbjob-{{ loop.index }}">
+
+    <!-- Card header -->
+    <div class="db-card-header">
+      <div class="db-card-title-block">
+        <span class="job-index">{{ (page - 1) * per_page + loop.index }}</span>
+        <div>
+          <div class="db-card-title">{{ job.title }}</div>
+          <div class="db-card-company">{{ job.company }}</div>
+        </div>
+      </div>
+      <div class="db-card-badges">
+        {% if job.remote_type and job.remote_type != 'unknown' %}
+        <span class="remote-badge remote-{{ job.remote_type }}">{{ job.remote_type }}</span>
+        {% endif %}
+        <span class="source-badge">{{ job.source }}</span>
+        {% if job.apply_url %}
+        <a href="{{ job.apply_url }}" target="_blank" rel="noopener" class="btn btn-apply db-apply-btn">Apply ↗</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Meta row -->
+    <div class="db-card-meta">
+      {% if job.location %}
+      <span class="db-meta-item">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5C5.52 1.5 3.5 3.52 3.5 6c0 3.75 4.5 8.5 4.5 8.5s4.5-4.75 4.5-8.5c0-2.48-2.02-4.5-4.5-4.5z"/><circle cx="8" cy="6" r="1.5"/></svg>
+        {{ job.location }}
+      </span>
+      {% endif %}
+      {% if job.date_posted %}
+      <span class="db-meta-item">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M5 1.5v3M11 1.5v3M2 7h12"/></svg>
+        Posted {{ job.date_posted }}
+      </span>
+      {% endif %}
+      <span class="db-meta-item db-meta-muted">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 2"/></svg>
+        Found <span data-utc-local="{{ job.date_found }}">{{ job.date_found[:10] if job.date_found else '—' }}</span>
+      </span>
+      <!-- Salary -->
+      {% if job.salary_min or job.salary_max %}
+      <span class="db-meta-item db-salary">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4v8M6 5.5h3a1.5 1.5 0 010 3H7a1.5 1.5 0 000 3h3.5"/></svg>
+        {% set cur = job.salary_currency or '$' %}
+        {% if job.salary_min and job.salary_max %}
+          {{ cur }}{{ '{:,.0f}'.format(job.salary_min / 1000) }}k – {{ cur }}{{ '{:,.0f}'.format(job.salary_max / 1000) }}k
+        {% elif job.salary_min %}
+          {{ cur }}{{ '{:,.0f}'.format(job.salary_min / 1000) }}k+
+        {% else %}
+          up to {{ cur }}{{ '{:,.0f}'.format(job.salary_max / 1000) }}k
+        {% endif %}
+        {% if job.salary_period %}<span class="db-salary-period">/{{ job.salary_period }}</span>{% endif %}
+      </span>
+      {% elif job.salary_raw %}
+      <span class="db-meta-item db-salary">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4v8M6 5.5h3a1.5 1.5 0 010 3H7a1.5 1.5 0 000 3h3.5"/></svg>
+        {{ job.salary_raw }}
+      </span>
+      {% endif %}
+      <!-- Job key chip -->
+      <span class="db-meta-item db-meta-muted db-key-chip" title="{{ job.job_key }}">
+        {{ job.job_key[:32] }}{% if job.job_key | length > 32 %}…{% endif %}
+      </span>
+    </div>
+
+    <!-- Profile associations -->
+    {% if assoc %}
+    <div class="db-profiles-row">
+      <span class="db-profiles-label">Profiles</span>
+      {% for a in assoc %}
+      {% set is_hard_filter = a.match_notes and (a.match_notes.startswith('[Hard filter]') or a.match_notes.startswith('[Title filter]')) %}
+      {% set filter_reason = a.match_notes[a.match_notes.index(']')+2:] if is_hard_filter else none %}
+      {% set tooltip %}{% if is_hard_filter %}{{ a.match_notes }}{% elif a.manager_score is not none %}Mgr {{ a.manager_score }} · You {{ a.candidate_score or 0 }} · Match {{ "%.0f"|format((a.match_score or 0)*100) }}%{% if a.hidden %} (hidden — below threshold or outside top-N){% endif %}{% if a.match_notes %} | {{ a.match_notes }}{% endif %}{% endif %}{% endset %}
+      <span class="db-profile-tag db-profile-tag-{{ a.application_status }} {% if a.hidden %}db-profile-tag-hidden{% endif %} {% if is_hard_filter %}db-profile-tag-filtered{% endif %}"
+            title="{{ tooltip }}">
+        <span class="db-profile-tag-name">{{ a.name | capitalize }}</span>
+        {% if is_hard_filter %}
+        <span class="db-profile-tag-filter-reason">{{ filter_reason }}</span>
+        {% else %}
+        <span class="db-profile-tag-status">{{ a.application_status | replace('_', ' ') }}</span>
+        {% if a.manager_score is not none %}
+        <span class="db-profile-tag-scores">{{ a.manager_score }}·{{ a.candidate_score or 0 }}</span>
+        <span class="db-profile-tag-match">{{ "%.0f"|format((a.match_score or 0)*100) }}%</span>
+        {% endif %}
+        {% if a.hidden %}<span class="db-profile-tag-hidden-dot" title="Hidden — below promotion threshold or outside top-N">●</span>{% endif %}
+        {% endif %}
+      </span>
+      {% endfor %}
+    </div>
+    {% else %}
+    {% set effective_date = job.date_posted if (job.date_posted and job.date_posted|length >= 10 and job.date_posted[4:5] == '-') else (job.date_found[:10] if job.date_found else '') %}
+    <div class="db-profiles-row db-profiles-unassociated">
+      <span class="db-profiles-label">Profiles</span>
+      {% if job.fetched_for_profile_name %}
+      <span class="db-profile-tag db-profile-tag-new db-profile-tag-hidden db-profile-tag-fetched-for"
+            title="Fetched for {{ job.fetched_for_profile_name | capitalize }} but not yet evaluated (pending scoring or filtered by retention window)">
+        <span class="db-profile-tag-name">{{ job.fetched_for_profile_name | capitalize }}</span>
+        <span class="db-profile-tag-status">fetched</span>
+      </span>
+      {% else %}
+      <span class="db-unassociated-chip">Not associated with any profile</span>
+      {% endif %}
+      {% if effective_date and effective_date < retention_cutoff %}
+      <span class="db-stale-note" title="date_posted {{ job.date_posted }} is outside the {{ retention_days }}-day scoring window — the ranker skips jobs with stale post dates">
+        Skipped by ranker — post date {{ job.date_posted }} is outside the {{ retention_days }}-day window
+      </span>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Description -->
+    {% if job.description %}
+    <div class="db-desc-wrap">
+      <div class="db-desc-preview" id="desc-preview-{{ loop.index }}">
+        {{ job.description | extract_description(500) | replace('\n', '<br>') | safe }}
+      </div>
+      <div class="db-desc-full" id="desc-full-{{ loop.index }}" style="display:none">
+        {{ job.description | extract_description(50000) | replace('\n', '<br>') | safe }}
+      </div>
+      <button class="db-toggle-btn" onclick="toggleDesc({{ loop.index }})">
+        <span id="desc-btn-text-{{ loop.index }}">Show full description</span>
+        <svg id="desc-btn-icon-{{ loop.index }}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
+      </button>
+    </div>
+    {% else %}
+    <div class="db-desc-empty">No description stored.</div>
+    {% endif %}
+
+    <!-- Raw data toggle -->
+    {% if job.raw_data %}
+    <div class="db-raw-section">
+      <button class="db-toggle-btn db-toggle-raw" onclick="toggleRaw({{ loop.index }})">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="1.5" y="3.5" width="13" height="9" rx="1.5"/><path d="M5 6.5l-2 2 2 2M11 6.5l2 2-2 2M9 5.5l-2 5"/></svg>
+        <span id="raw-btn-text-{{ loop.index }}">Show raw data</span>
+        <svg id="raw-btn-icon-{{ loop.index }}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
+      </button>
+      <div class="db-raw-body" id="raw-body-{{ loop.index }}" style="display:none">
+        <pre class="db-raw-pre">{{ job.raw_data }}</pre>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- AI scoring response toggle -->
+    {% set ai_responses = assoc | selectattr('ai_raw_response') | list %}
+    {% if ai_responses %}
+    <div class="db-raw-section">
+      <button class="db-toggle-btn db-toggle-ai" onclick="toggleAiResponse({{ loop.index }})">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M8 1.5a6.5 6.5 0 100 13A6.5 6.5 0 008 1.5z"/><path d="M8 5v4l2.5 1.5"/></svg>
+        <span id="ai-btn-text-{{ loop.index }}">Show AI scoring response</span>
+        <svg id="ai-btn-icon-{{ loop.index }}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
+      </button>
+      <div class="db-raw-body" id="ai-body-{{ loop.index }}" style="display:none">
+        {% for a in ai_responses %}
+        {% if ai_responses | length > 1 %}
+        <div class="db-ai-profile-label">Profile: {{ a.name | capitalize }}</div>
+        {% endif %}
+        <pre class="db-raw-pre">{{ a.ai_raw_response }}</pre>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% macro page_url(p) %}?q={{ search }}&source={{ source }}&remote={{ remote }}&has_salary={{ '1' if has_salary else '' }}&posted_after={{ posted_after }}&profile={{ profile_filter }}&missing_info={{ '1' if missing_info else '' }}&has_score={{ '1' if has_score else '' }}&sort={{ sort_by }}&page={{ p }}{% endmacro %}
+{% if total_pages > 1 %}
+<div class="db-pagination">
+  {% if page > 1 %}
+  <a href="{{ page_url(page - 1) }}" class="db-page-btn">← Prev</a>
+  {% else %}
+  <span class="db-page-btn disabled">← Prev</span>
+  {% endif %}
+
+  <div class="db-page-numbers">
+    {% set start_page = [1, page - 2] | max %}
+    {% set end_page   = [total_pages, page + 2] | min %}
+    {% if start_page > 1 %}
+    <a href="{{ page_url(1) }}" class="db-page-num">1</a>
+    {% if start_page > 2 %}<span class="db-page-ellipsis">…</span>{% endif %}
+    {% endif %}
+    {% for p in range(start_page, end_page + 1) %}
+    <a href="{{ page_url(p) }}" class="db-page-num {% if p == page %}active{% endif %}">{{ p }}</a>
+    {% endfor %}
+    {% if end_page < total_pages %}
+    {% if end_page < total_pages - 1 %}<span class="db-page-ellipsis">…</span>{% endif %}
+    <a href="{{ page_url(total_pages) }}" class="db-page-num">{{ total_pages }}</a>
+    {% endif %}
+  </div>
+
+  {% if page < total_pages %}
+  <a href="{{ page_url(page + 1) }}" class="db-page-btn">Next →</a>
+  {% else %}
+  <span class="db-page-btn disabled">Next →</span>
+  {% endif %}
+
+  <span class="db-page-info">{{ (page - 1) * per_page + 1 }}–{{ [(page * per_page), total] | min }} of {{ total }}</span>
+</div>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+  <h2>No jobs found</h2>
+  <p>Try adjusting your search or filters.</p>
+</div>
+{% endif %}
+
+<script>
+function toggleDesc(idx) {
+  const preview = document.getElementById('desc-preview-' + idx);
+  const full    = document.getElementById('desc-full-' + idx);
+  const btn     = document.getElementById('desc-btn-text-' + idx);
+  const icon    = document.getElementById('desc-btn-icon-' + idx);
+  const showing = full.style.display !== 'none';
+  preview.style.display = showing ? '' : 'none';
+  full.style.display    = showing ? 'none' : '';
+  btn.textContent       = showing ? 'Show full description' : 'Collapse description';
+  icon.style.transform  = showing ? '' : 'rotate(180deg)';
+}
+
+function toggleRaw(idx) {
+  const body = document.getElementById('raw-body-' + idx);
+  const btn  = document.getElementById('raw-btn-text-' + idx);
+  const icon = document.getElementById('raw-btn-icon-' + idx);
+  const showing = body.style.display !== 'none';
+  body.style.display   = showing ? 'none' : '';
+  btn.textContent      = showing ? 'Show raw data' : 'Hide raw data';
+  icon.style.transform = showing ? '' : 'rotate(180deg)';
+}
+
+function toggleAiResponse(idx) {
+  const body = document.getElementById('ai-body-' + idx);
+  const btn  = document.getElementById('ai-btn-text-' + idx);
+  const icon = document.getElementById('ai-btn-icon-' + idx);
+  const showing = body.style.display !== 'none';
+  body.style.display   = showing ? 'none' : '';
+  btn.textContent      = showing ? 'Show AI scoring response' : 'Hide AI scoring response';
+  icon.style.transform = showing ? '' : 'rotate(180deg)';
+}
+
+function clearSearch() {
+  document.getElementById('db-search-input').value = '';
+  document.getElementById('db-filter-form').submit();
+}
+</script>
+{% endblock %}

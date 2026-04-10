@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Profiles — Job Finder{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Your Profiles</h1>
+  <p class="subtitle">Select a profile to review recommended jobs</p>
+</div>
+
+{% if profiles %}
+<div class="profile-grid">
+  {% for p in profiles %}
+  <a href="{{ url_for('profile_jobs', name=p.name) }}" class="profile-card">
+    <div class="profile-card-header">
+      <h2>{{ p.name | capitalize }}</h2>
+      {% if p.active_applications > 0 %}
+      <span class="badge-active">{{ p.active_applications }} active</span>
+      {% endif %}
+    </div>
+    <div class="profile-meta">
+      {% if p.structured and p.structured.target_job_titles %}
+      <div class="meta-row">
+        <span class="meta-label">Targeting</span>
+        <span>{{ p.structured.target_job_titles[:2] | join(', ') }}</span>
+      </div>
+      {% endif %}
+      {% if p.structured and p.structured.preferred_locations %}
+      <div class="meta-row">
+        <span class="meta-label">Location</span>
+        <span>{{ p.structured.preferred_locations | join(', ') }}</span>
+      </div>
+      {% endif %}
+    </div>
+    <div class="profile-stats">
+      <div class="stat stat-ochre">
+        <span class="stat-num">{{ p.total_jobs }}</span>
+        <span class="stat-label">matches</span>
+      </div>
+      <div class="stat stat-blue">
+        <span class="stat-num">{{ p.new_jobs }}</span>
+        <span class="stat-label">new</span>
+      </div>
+      <div class="stat stat-plum">
+        <span class="stat-num">{{ p.active_applications }}</span>
+        <span class="stat-label">in progress</span>
+      </div>
+    </div>
+    <div style="margin-top:.85rem;">
+      <button class="btn-find-jobs"
+              data-profile="{{ p.name }}"
+              onclick="event.preventDefault(); event.stopPropagation(); runPipeline('{{ p.name }}')">
+        <span class="btn-spinner"></span>
+        Find New Jobs
+      </button>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <h2>No profiles yet</h2>
+  <p>Run the setup wizard to create your first profile:</p>
+  <pre>python setup_wizard.py</pre>
+</div>
+{% endif %}
+{% endblock %}

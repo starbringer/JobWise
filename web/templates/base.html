@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" id="html-root">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}JobWise{% endblock %}</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='icon.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.png') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=9">
+  <script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('jobwise-theme')||'pine');}catch(_){document.documentElement.setAttribute('data-theme','pine');}</script>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="{{ url_for('index') }}" class="nav-brand">
+      <img src="{{ url_for('static', filename='icon.png') }}" alt="JobWise" class="nav-logo">
+      JobWise
+    </a>
+    <div class="nav-links">
+      <a href="{{ url_for('index') }}" {% if request.endpoint in ['index', 'profile_jobs', 'profile_structured', 'job_detail', 'sync_profile', 'profile_stats'] %}class="active"{% endif %}>Profiles</a>
+      <a href="{{ url_for('jobs_database') }}" {% if request.endpoint == 'jobs_database' %}class="active"{% endif %}>Database</a>
+    </div>
+    <div class="theme-switcher" id="themeSwitcher">
+      <button class="theme-btn" id="themeBtn" onclick="toggleThemePanel()" aria-haspopup="true" aria-expanded="false">
+        <span class="theme-swatches" id="themeSwatches"></span>
+        <span id="themeBtnLabel">Theme</span>
+      </button>
+      <div class="theme-panel" id="themePanel" hidden role="dialog" aria-label="Color theme selection">
+        <div class="theme-panel-title">Color Theme</div>
+        <div class="theme-options" id="themeOptions"></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Pipeline status bar — visible during and after a "Find New Jobs" run -->
+  <div id="pipelineBar" class="pipeline-bar" hidden></div>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="{{ url_for('static', filename='app.js') }}?v=12"></script>
+  <script>
+  // ── Pipeline status bar ────────────────────────────────────────────────────
+  (function () {
+    var bar = document.getElementById('pipelineBar');
+    if (!bar) return;
+
+    var pollTimer = null;
+    var tickTimer = null;
+    var currentStartedAt = null;
+
+    // ── Render helpers ────────────────────────────────────────────────────────
+    function fmtTime(ts) {
+      if (!ts) return '';
+      var d = new Date(ts * 1000);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function fmtElapsed(startedAt) {
+      var secs = Math.max(0, Math.floor(Date.now() / 1000 - startedAt));
+      var m = Math.floor(secs / 60), s = secs % 60;
+      return m > 0 ? m + 'm ' + s + 's' : s + 's';
+    }
+
+    function setAllRunBtns(disabled, runningProfile) {
+      document.querySelectorAll('.btn-find-jobs').forEach(function (btn) {
+        btn.disabled = disabled;
+        if (disabled) {
+          btn.classList.add('loading');
+          if (runningProfile && btn.dataset.profile !== runningProfile) {
+            btn.classList.remove('loading');
+            btn.title = 'Waiting — a search is already running for ' + runningProfile;
+          }
+        } else {
+          btn.classList.remove('loading');
+          btn.removeAttribute('title');
+        }
+      });
+    }
+
+    // ── State renderers ───────────────────────────────────────────────────────
+    function renderRunning(state) {
+      currentStartedAt = state.started_at;
+      bar.className = 'pipeline-bar running';
+      bar.removeAttribute('hidden');
+      var stepMsg = (function (step, jobCount) {
+        if (step === 'fetching')  return 'Trawling job boards so you don\u2019t have to\u2026';
+        if (step === 'filtering') return 'Weeding out the obvious no\u2019s \u2014 salary, location, titles\u2026';
+        if (step === 'scoring' && jobCount > 50) return 'The AI has ' + jobCount + ' postings to work through \u2014 all of them. First run is always the slowest, so feel free to wander off and come back.';
+        if (step === 'scoring')   return 'The AI is reading every posting. Yes, every single one.';
+        return 'Working on it\u2026';
+      })(state.step, state.job_count);
+
+      bar.innerHTML =
+        '<div class="pipeline-track"><div class="pipeline-track-fill"></div></div>' +
+        '<span class="pipeline-bar-text"><strong>' + state.profile + '</strong> &mdash; ' + stepMsg +
+        ' <span class="pipeline-bar-hint">Feel free to browse your existing jobs while you wait.</span></span>' +
+        '<span class="pipeline-elapsed" id="pipelineElapsed">' + fmtElapsed(state.started_at) + '</span>';
+      setAllRunBtns(true, state.profile);
+
+      // Tick elapsed time every second
+      if (tickTimer) clearInterval(tickTimer);
+      tickTimer = setInterval(function () {
+        var el = document.getElementById('pipelineElapsed');
+        if (el && currentStartedAt) el.textContent = fmtElapsed(currentStartedAt);
+      }, 1000);
+    }
+
+    function renderDone(state) {
+      currentStartedAt = null;
+      if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
+      bar.className = 'pipeline-bar done';
+      bar.dataset.finishedAt = state.finished_at;
+      bar.removeAttribute('hidden');
+      var s = state.summary || {};
+      var detail = '';
+      if (s.jobs_fetched !== undefined) {
+        detail = s.jobs_fetched + ' fetched \u00b7 ' +
+                 (s.jobs_new_in_db || 0) + ' new \u00b7 ' +
+                 (s.jobs_added_to_profile || 0) + ' added to your list';
+      }
+      bar.innerHTML =
+        '<span>&#10003;</span>' +
+        '<span class="pipeline-bar-text">Last search: ' + fmtTime(state.finished_at) +
+        ' (<strong>' + state.profile + '</strong>)' +
+        (detail ? ' &mdash; ' + detail : '') + '</span>' +
+        '<button class="pipeline-dismiss" onclick="dismissPipelineBar()" aria-label="Dismiss">&times;</button>';
+      setAllRunBtns(false);
+    }
+
+    function renderError(state) {
+      currentStartedAt = null;
+      if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
+      bar.className = 'pipeline-bar error';
+      bar.dataset.finishedAt = state.finished_at;
+      bar.removeAttribute('hidden');
+      bar.innerHTML =
+        '<span>&#10007;</span>' +
+        '<span class="pipeline-bar-text">Search failed (<strong>' + state.profile + '</strong>)' +
+        (state.error ? ' &mdash; ' + state.error : '') + '</span>' +
+        '<button class="pipeline-dismiss" onclick="dismissPipelineBar()" aria-label="Dismiss">&times;</button>';
+      setAllRunBtns(false);
+    }
+
+    var DISMISS_KEY = 'jobwise-pipeline-dismissed';
+
+    function isDismissed(state) {
+      try {
+        return localStorage.getItem(DISMISS_KEY) === String(state.finished_at);
+      } catch (e) { return false; }
+    }
+
+    // ── Core update function ──────────────────────────────────────────────────
+    function applyState(state) {
+      if (state.status === 'idle') {
+        bar.setAttribute('hidden', '');
+        setAllRunBtns(false);
+        stopPolling();
+      } else if (state.status === 'running') {
+        renderRunning(state);
+        startPolling();
+      } else if (state.status === 'done') {
+        if (isDismissed(state)) { bar.setAttribute('hidden', ''); setAllRunBtns(false); } else { renderDone(state); }
+        stopPolling();
+      } else if (state.status === 'error') {
+        if (isDismissed(state)) { bar.setAttribute('hidden', ''); setAllRunBtns(false); } else { renderError(state); }
+        stopPolling();
+      }
+    }
+
+    // ── Polling ───────────────────────────────────────────────────────────────
+    function startPolling() {
+      if (pollTimer) return;
+      pollTimer = setInterval(checkStatus, 3000);
+    }
+
+    function stopPolling() {
+      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    }
+
+    function checkStatus() {
+      if (document.hidden) return;
+      fetch('/api/pipeline/status')
+        .then(function (r) { return r.json(); })
+        .then(applyState)
+        .catch(function () {});
+    }
+
+    // ── Public API used by inline onclick handlers ────────────────────────────
+    window.dismissPipelineBar = function () {
+      try {
+        // Remember which result was dismissed so it stays hidden after page refresh
+        var ts = bar.dataset.finishedAt;
+        if (ts) localStorage.setItem(DISMISS_KEY, ts);
+      } catch (e) {}
+      bar.setAttribute('hidden', '');
+    };
+
+    window.runPipeline = function (profileName) {
+      var btn = document.querySelector('.btn-find-jobs[data-profile="' + profileName + '"]');
+      if (btn) { btn.disabled = true; btn.classList.add('loading'); }
+
+      fetch('/api/pipeline/run/' + profileName, { method: 'POST' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.ok) {
+            try { localStorage.removeItem(DISMISS_KEY); } catch (e) {}
+            checkStatus(); // render running state immediately
+            startPolling();
+          } else {
+            var msg = data.error === 'already_running'
+              ? 'A search is already running for ' + (data.profile || 'another profile') + '. Please wait.'
+              : (data.error || 'Could not start the search. Please try again.');
+            alert(msg);
+            if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
+          }
+        })
+        .catch(function () {
+          alert('Could not reach the server. Is it still running?');
+          if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
+        });
+    };
+
+    // Check status on every page load so the bar persists across navigation
+    document.addEventListener('DOMContentLoaded', checkStatus);
+    // Resume polling when user returns to the tab
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) checkStatus();
+    });
+  }());
+  </script>
+</body>
+</html>

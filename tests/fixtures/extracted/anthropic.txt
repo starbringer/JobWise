@@ -1,0 +1,44 @@
+Anthropic -- Account Executive, Academic Medical Centers
+Extracted: 3,032 chars
+============================================================
+
+Responsibilities:
+Own the full sales cycle for academic medical centers—from prospecting and qualification through negotiation and close
+Build and manage a pipeline of net-new opportunities, targeting clinical leadership, CMIOs, CIOs, and operational executives
+Partner with our Life Sciences team to commercialize relationships and identify expansion opportunities across partner institutions
+Coordinate with Account Executives covering affiliated universities to navigate shared governance and procurement
+Navigate complex procurement processes, including BAAs, compliance reviews, and multi-stakeholder buying committees
+Develop deep expertise in how Claude can support clinical workflows, administrative operations, and care delivery
+Partner with Solutions Architecture to scope technical implementations and integrations
+Represent Anthropic's mission and values in every customer interaction
+Primary Use Case Focus:
+Clinical Documentation: Ambient listening, note generation, discharge summaries, clinical decision support
+Operational Efficiency: Prior authorization, revenue cycle optimization, scheduling, patient communication
+Care Coordination: Care management workflows, transitions of care, population health
+Administrative Workflows: HR, finance, compliance, quality reporting
+You may be a good fit if you have:
+5+ years of enterprise sales experience selling into academic medical centers or large health systems
+Direct experience selling enterprise software to medical centers OR major medical equipment/devices
+Demonstrated ability to navigate complex, multi-stakeholder sales cycles with CMIOs, CIOs, and clinical leadership
+Comfort with technical conversations about APIs, integrations, and healthcare data standards (HL7, FHIR)
+Track record of building pipeline from scratch and closing net-new business
+Understanding of healthcare compliance requirements (HIPAA, BAAs, security reviews)
+Genuine curiosity about AI and its potential to improve healthcare delivery
+Strong candidates may also have:
+Experience selling to both the clinical and IT sides of health systems
+Existing relationships with academic medical center leadership
+Background in clinical operations, health IT, or healthcare consulting
+Experience with EHR integrations and clinical workflow design
+Familiarity with AI/ML applications in healthcare
+Compensation & Logistics:
+Competitive base + variable compensation
+Equity participation
+Location: San Francisco preferred; remote (US) considered for exceptional candidates
+Travel: ~25-40% depending on territory
+The annual compensation range for this role is listed below.
+For sales roles, the range provided is the role’s On Target Earnings ("OTE") range, meaning that the range includes both the sales commissions/sales bonuses target and annual base salary for the role.
+Annual Salary:
+$290,000 — $435,000 USD
+Logistics
+Education requirements: We require at least a Bachelor's degree in a related field or equivalent experience.
+Location-based hybrid policy: Currently, we expect all staff to be i

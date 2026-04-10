@@ -1,0 +1,146 @@
+# Job Finder Configuration — Sample
+# Copy this file to config/config.yaml and adjust the values for your setup.
+#
+#   cp config/config.sample.yaml config/config.yaml
+
+# AI Provider Settings
+# Set `provider` to the service you want to use, then configure its block below.
+# Available providers: "gemini" | "openai" | "anthropic" | "ollama" | "claude_cli"
+#   gemini    — Google Gemini via API  (requires GEMINI_API_KEY in .env)
+#   openai    — OpenAI via API         (requires OPENAI_API_KEY in .env)
+#   anthropic — Anthropic API          (requires ANTHROPIC_API_KEY in .env)
+#   ollama    — Local Ollama instance  (no API key needed; Ollama must be running)
+#   claude_cli — Legacy Claude Code CLI (no API key; requires Claude Code installed)
+ai:
+  provider: "gemini"
+
+  # claude_cli — uses the `claude -p` subprocess bundled with Claude Code.
+  # Leave model blank to use Claude Code's current default (Sonnet 4.6).
+  # Override with a cheaper model to cut scoring costs — Haiku 4.5 is ~25x
+  # less expensive and performs well for structured extraction tasks.
+  # Run `claude --help` or check https://claude.ai/code for available model IDs.
+  claude_cli:
+    model: ""   # e.g. "claude-haiku-4-5-20251001" for much lower cost
+
+  gemini:
+    model: "gemini-2.5-pro-preview"
+
+  openai:
+    model: "gpt-4o"
+
+  # For the anthropic provider, the static scoring rules + candidate profile are
+  # automatically sent as a cached system message, saving ~60-70% of input tokens
+  # on all but the first batch call per run (Anthropic ephemeral cache, 5-min TTL).
+  anthropic:
+    model: "claude-haiku-4-5-20251001"   # ~25x cheaper than Sonnet; good for structured extraction
+
+  ollama:
+    model: "llama3"
+    host: "http://localhost"
+    port: 11434
+
+# Max jobs promoted to visible per pipeline run (caps new promotions in a single run)
+top_n: 50
+
+# Hard cap on the final recommended list size per profile.
+# After every scoring run, all scored jobs are re-ranked globally and only the
+# top top_n_display qualifying jobs remain visible (hidden=FALSE, status='new').
+# Jobs the user has actioned (saved, applied, etc.) are never hidden by this cap.
+top_n_display: 50
+
+# Number of JSearch queries per profile per run (one query = one API credit).
+# JSearch credits are only spent on companies without a free Greenhouse/Lever board.
+# Free tier: 200 credits/month. Safe limits: 10 @ 3-4 runs/week, 9 @ 5 runs/week.
+jsearch_queries_per_run: 10
+
+# Job sources — enable/disable individually
+sources:
+  greenhouse: true
+  lever: true
+  jsearch: true
+  jobspy: true   # set to false to disable LinkedIn/Indeed scraping (see Legal Notice in README)
+  max_ats_companies_per_run: 20   # cap on Greenhouse + Lever slugs fetched per run
+
+# JobSpy specific settings
+jobspy:
+  sites: ["linkedin", "indeed"]   # glassdoor and ziprecruiter also supported
+  results_per_site: 25
+
+# Scheduler settings
+# Two ways to run the pipeline automatically:
+#
+#   Option A — Windows Task Scheduler (recommended):
+#     Run scheduler\install-task.bat as Administrator. It reads run_times below,
+#     creates one WakeToRun task per time, and wakes the PC from sleep to run the
+#     pipeline. No background process needed. Re-run install-task.bat after
+#     changing run_times.
+#
+#   Option B — Daemon (manual / non-Windows):
+#     Set enabled: true and run: python scheduler/scheduler.py
+#     The process stays running and triggers the pipeline at each run_time.
+#
+scheduler:
+  enabled: false         # only used by Option B (scheduler/scheduler.py daemon)
+  # run_times: list of times to run each day (24h local time)
+  run_times: ["08:00", "18:00"]
+  profiles: []   # list of profile names to run on schedule; empty = all profiles
+
+# API credentials — keys are read from environment variables, NOT stored here.
+# Create a .env file in the project root (never commit it):
+#   JSEARCH_API_KEY=your_rapidapi_key_here
+api:
+  jsearch_reset_day: 1    # Day-of-month your RapidAPI subscription renews (e.g., 19 if you
+                           # subscribed on the 19th). Used to compute next_reset_date in DB.
+
+# Web app settings
+web:
+  host: "0.0.0.0"        # 0.0.0.0 = accessible on local network
+  port: 5000
+  debug: false
+
+# Database
+database:
+  path: "data/jobs.db"
+
+# Profiles directory
+profiles_dir: "profiles"
+
+# Preferred companies list
+preferred_companies_file: "config/preferred_companies.txt"
+
+# Job retention window in days
+job_retention_days: 30
+
+# Logging
+logging:
+  level: "INFO"           # DEBUG | INFO | WARNING | ERROR
+  file: "logs/pipeline.log"
+  max_bytes: 5242880      # 5 MB per log file
+  backup_count: 3         # keep 3 rotated log files
+
+ranker:
+  batch_size: 50          # max jobs per Claude call (hard ceiling); batches are also split earlier by token budget
+  min_match_score: 0.4    # required-skill coverage floor (0.0–1.0); jobs below this are scored but not promoted
+                          # e.g. 0.4 = candidate must match at least 40% of explicitly required skills
+  description_max_chars: 3500   # safety cap on description length sent to AI (chars).
+                                 # The section-classifier removes company intros and EEO boilerplate first,
+                                 # so most descriptions come in well under this limit naturally.
+                                 # Reduce to 2500 for tighter token budgets (may miss very long req lists).
+
+  # Scoring weights — tune these without re-running AI (use --repromote after changing)
+  scoring:
+    manager:
+      required:     10    # points for matching a required skill/experience/domain pair
+      preferred:     6    # points for matching a preferred pair
+      nice_to_have:  3    # points for matching a nice-to-have pair
+      unknown:       5    # points when job_importance is not specified
+      extra_skill:   1    # small bonus when candidate has a skill the job doesn't require
+    candidate:
+      must_have:    10    # points for satisfying a must_have candidate preference
+      nice_to_have:  5    # points for satisfying a nice_to_have candidate preference
+      unknown:       7    # points when candidate_priority is not specified
+
+    # Evidence depth thresholds are now computed dynamically — no config needed:
+    #   ideal_manager_pairs  = total_job_requirements reported by Claude per job
+    #   ideal_candidate_pairs = count of must_haves + salary + work_style in the profile
+    # Both are recalculated on every run and reflect the actual job/profile content.

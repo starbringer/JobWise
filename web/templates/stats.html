@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{{ profile_name | capitalize }} Stats — Job Finder{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{{ url_for('index') }}">Profiles</a>
+  <a href="{{ url_for('profile_jobs', name=profile_name) }}">{{ profile_name | capitalize }}</a>
+  Stats
+</div>
+
+<div class="page-header">
+  <h1>{{ profile_name | capitalize }} — Stats</h1>
+</div>
+
+<div class="stats-grid">
+  <div class="stats-card">
+    <h3>By Status</h3>
+    <table class="stats-table">
+      {% for status, cnt in status_counts.items() | sort(attribute='1', reverse=True) %}
+      <tr>
+        <td><span class="status-badge status-{{ status }}">{{ status | replace('_', ' ') }}</span></td>
+        <td class="count">{{ cnt }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <div class="stats-card">
+    <h3>By Source</h3>
+    <table class="stats-table">
+      {% for source, cnt in source_counts.items() | sort(attribute='1', reverse=True) %}
+      <tr>
+        <td>{{ source }}</td>
+        <td class="count">{{ cnt }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+<div class="stats-card">
+  <h3>Recent Pipeline Runs</h3>
+  {% if runs %}
+  <table class="runs-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Trigger</th>
+        <th>Fetched</th>
+        <th>Added</th>
+        <th>JSearch Credits</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for run in runs %}
+      <tr>
+        <td>{{ run.started_at[:16] }}</td>
+        <td>{{ run.triggered_by }}</td>
+        <td>{{ run.jobs_found }}</td>
+        <td>{{ run.jobs_added }}</td>
+        <td>{{ run.jsearch_credits }}</td>
+        <td><span class="status-badge status-{{ run.status }}">{{ run.status }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color: var(--text-subtle); font-size: .875rem;">No runs recorded yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

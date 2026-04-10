@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+{% block title %}{{ profile_name | capitalize }} — Job Finder{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="header-row">
+    <h1>{{ profile_name | capitalize }}</h1>
+    <div class="header-actions">
+      <button class="btn-find-jobs"
+              data-profile="{{ profile_name }}"
+              onclick="runPipeline('{{ profile_name }}')">
+        <span class="btn-spinner"></span>
+        Find New Jobs
+      </button>
+      <a href="{{ url_for('profile_structured', name=profile_name) }}" class="btn btn-ghost">View Profile</a>
+      <a href="{{ url_for('profile_stats', name=profile_name) }}" class="btn btn-ghost">Stats</a>
+    </div>
+  </div>
+  {% if profile.target_job_titles %}
+  <p class="subtitle">{{ profile.target_job_titles[:3] | join(' · ') }}</p>
+  {% endif %}
+</div>
+
+<!-- Filter tabs -->
+<div class="filter-bar">
+  <div class="filter-tabs">
+    <a href="?status=all&sort={{ sort_by }}" class="tab {% if status_filter=='all' %}active{% endif %}">
+      All <span class="tab-count">{{ total_count }}</span>
+    </a>
+    <a href="?status=new&sort={{ sort_by }}" class="tab {% if status_filter=='new' %}active{% endif %}">
+      New <span class="tab-count">{{ status_counts.get('new', 0) }}</span>
+    </a>
+    <a href="?status=saved&sort={{ sort_by }}" class="tab {% if status_filter=='saved' %}active{% endif %}">
+      Saved <span class="tab-count">{{ saved_count }}</span>
+    </a>
+    <a href="?status=applied&sort={{ sort_by }}" class="tab {% if status_filter=='applied' %}active{% endif %}">
+      Applied <span class="tab-count">{{ status_counts.get('applied', 0) }}</span>
+    </a>
+    <a href="?status=interviewing&sort={{ sort_by }}" class="tab {% if status_filter=='interviewing' %}active{% endif %}">
+      Interviewing <span class="tab-count">{{ interviewing_count }}</span>
+    </a>
+    <a href="?status=offer&sort={{ sort_by }}" class="tab {% if status_filter=='offer' %}active{% endif %}">
+      Offer <span class="tab-count">{{ status_counts.get('offer', 0) }}</span>
+    </a>
+    <a href="?status=rejected&sort={{ sort_by }}" class="tab {% if status_filter=='rejected' %}active{% endif %}">
+      Rejected <span class="tab-count">{{ status_counts.get('rejected', 0) }}</span>
+    </a>
+    {% if missing_info_count > 0 %}
+    <a href="?status=missing_info&sort={{ sort_by }}" class="tab tab-missing-info {% if status_filter=='missing_info' %}active{% endif %}">
+      Missing Info <span class="tab-count">{{ missing_info_count }}</span>
+    </a>
+    {% endif %}
+    {% if hidden_scored_count > 0 or status_filter == 'hidden' %}
+    <a href="?status=hidden&sort={{ sort_by }}" class="tab tab-hidden {% if status_filter=='hidden' %}active{% endif %}">
+      Hidden <span class="tab-count">{{ hidden_scored_count }}</span>
+    </a>
+    {% endif %}
+  </div>
+  <div class="sort-bar">
+    <label>Sort:</label>
+    <a href="?status={{ status_filter }}&sort=score&show_all={{ 1 if show_all else 0 }}" class="sort-opt {% if sort_by=='score' %}active{% endif %}">Score</a>
+    <a href="?status={{ status_filter }}&sort=date&show_all={{ 1 if show_all else 0 }}" class="sort-opt {% if sort_by=='date' %}active{% endif %}">Date</a>
+    <a href="?status={{ status_filter }}&sort=found&show_all={{ 1 if show_all else 0 }}" class="sort-opt {% if sort_by=='found' %}active{% endif %}" title="When this job was added to your list">Added</a>
+    <a href="?status={{ status_filter }}&sort=company&show_all={{ 1 if show_all else 0 }}" class="sort-opt {% if sort_by=='company' %}active{% endif %}">Company</a>
+    {% if not show_all and scored_hidden_count > 0 and status_filter != 'hidden' %}
+    <span class="sort-divider">|</span>
+    <a href="?sort={{ sort_by }}&show_all=1" class="sort-opt show-more-opt">+{{ scored_hidden_count }} more</a>
+    {% elif show_all %}
+    <span class="sort-divider">|</span>
+    <a href="?status={{ status_filter }}&sort={{ sort_by }}&show_all=0" class="sort-opt show-more-opt active">Show top only</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Job list -->
+{% if jobs %}
+<div class="job-list">
+  {% for job in jobs %}
+  <div class="job-card{% if job.is_hidden %} job-card-dimmed{% endif %}"
+       id="job-{{ job.job_key }}"
+       data-combined-score="{{ (job.manager_score or 0) + (job.candidate_score or 0) }}"
+       data-status="{{ job.application_status }}"
+       data-title="{{ job.title | e }}"
+       data-company="{{ job.company | e }}"
+       data-manager-score="{{ job.manager_score or 0 }}"
+       data-candidate-score="{{ job.candidate_score or 0 }}"
+       data-match-notes="{{ (job.match_notes or '') | e }}"
+       data-candidate-notes="{{ (job.candidate_notes or '') | e }}"
+       data-description="{{ (job.description | extract_description(10000) if job.description else '') | e }}"
+       data-apply-url="{{ job.apply_url or '' }}">
+    <div class="job-card-main">
+      <!-- Left: title, meta, AI notes, CTA -->
+      <div class="job-card-left">
+        <div class="job-title-row">
+          <span class="job-index">{{ loop.index }}</span>
+          <a href="{{ url_for('job_detail', name=profile_name, job_key=job.job_key) }}" class="job-title">
+            {{ job.title }}
+          </a>
+        </div>
+        <div class="job-meta">
+          <span class="company">{{ job.company }}</span>
+          {% if job.location %}<span class="separator">·</span><span class="location">{{ job.location }}</span>{% endif %}
+          {% if job.remote_type and job.remote_type != 'unknown' %}
+          <span class="separator">·</span><span class="remote-badge remote-{{ job.remote_type }}">{{ job.remote_type }}</span>
+          {% endif %}
+          {% if job.salary_min or job.salary_max %}
+          <span class="separator">·</span>
+          <span class="salary">
+            {% if job.salary_min and job.salary_max %}
+              ${{ '{:,.0f}'.format(job.salary_min / 1000) }}k–${{ '{:,.0f}'.format(job.salary_max / 1000) }}k
+            {% elif job.salary_min %}
+              ${{ '{:,.0f}'.format(job.salary_min / 1000) }}k+
+            {% else %}
+              up to ${{ '{:,.0f}'.format(job.salary_max / 1000) }}k
+            {% endif %}
+          </span>
+          {% endif %}
+          {% if job.date_posted %}
+          <span class="separator">·</span>
+          <span class="date-posted">{{ job.date_posted }}</span>
+          {% endif %}
+          {% if job.source %}
+          <span class="separator">·</span>
+          {% set _s = job.source %}
+          {% if _s == 'greenhouse' %}
+          <span class="source-badge source-gh" title="Greenhouse" data-date-found="{{ job.date_found }}">GH</span>
+          {% elif _s == 'lever' %}
+          <span class="source-badge source-lv" title="Lever" data-date-found="{{ job.date_found }}">LV</span>
+          {% elif _s == 'jsearch' %}
+          <span class="source-badge source-js" title="JSearch (RapidAPI)" data-date-found="{{ job.date_found }}">JS</span>
+          {% elif _s.startswith('jobspy_') %}
+          <span class="source-badge source-spy" title="JobSpy / {{ _s[7:] | capitalize }}" data-date-found="{{ job.date_found }}">{{ _s[7:9] | upper }}</span>
+          {% else %}
+          <span class="source-badge" title="{{ _s }}" data-date-found="{{ job.date_found }}">{{ _s[:2] | upper }}</span>
+          {% endif %}
+          {% endif %}
+        </div>
+
+        <!-- AI notes: 50/50 side-by-side panes -->
+        {% if job.match_notes or job.candidate_notes %}
+        <div class="ai-notes-row">
+          {% if job.match_notes %}
+          <div class="ai-note ai-note-mgr">
+            <span class="ai-note-label">Hiring manager's take</span>
+            <ul class="ai-note-bullets">
+              {% for line in job.match_notes.split('\n') %}{% set l = line.strip().lstrip('•').strip() %}{% if l %}<li>{{ l }}</li>{% endif %}{% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+          {% if job.candidate_notes %}
+          <div class="ai-note ai-note-you">
+            <span class="ai-note-label">What's in it for you</span>
+            <ul class="ai-note-bullets">
+              {% for line in job.candidate_notes.split('\n') %}{% set l = line.strip().lstrip('•').strip() %}{% if l %}<li>{{ l }}</li>{% endif %}{% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- CTA row -->
+        <div class="card-cta-row">
+          <button class="btn btn-read-desc" onclick="openDescModal(this.closest('.job-card'))">
+            Read Description
+          </button>
+          {% if job.apply_url %}
+          <a href="{{ job.apply_url }}" target="_blank" rel="noopener" class="btn btn-apply">Apply →</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Right: circular score meters -->
+      <div class="job-card-right">
+        <div class="dual-scores arc-meters-col" data-pairs="{{ (job.match_pairs_json or '[]') | e }}">
+          {% if job.manager_score is not none %}
+          <div class="arc-meter arc-meter-mgr score-pill-clickable"
+               data-score="{{ job.manager_score }}"
+               role="button" tabindex="0"
+               onclick="showPairsModal(this, 'mgr')"
+               onkeydown="if(event.key==='Enter'||event.key===' ')showPairsModal(this,'mgr')"
+               aria-label="Manager score {{ job.manager_score }} — click to see skill and experience match details"
+               title="Click to see skill &amp; experience match details">
+            <div class="arc-ring-wrap">
+              <svg viewBox="0 0 60 60" class="arc-svg" aria-hidden="true">
+                <circle class="arc-track" cx="30" cy="30" r="22"/>
+                <circle class="arc-fill arc-fill-mgr" cx="30" cy="30" r="22"
+                        style="--score: {{ job.manager_score }}"/>
+              </svg>
+              <span class="arc-value" data-score="{{ job.manager_score }}">{{ job.manager_score }}</span>
+            </div>
+            <span class="arc-label">Manager Match</span>
+          </div>
+          <div class="arc-meter arc-meter-you score-pill-clickable"
+               data-score="{{ job.candidate_score or 0 }}"
+               role="button" tabindex="0"
+               onclick="showPairsModal(this, 'you')"
+               onkeydown="if(event.key==='Enter'||event.key===' ')showPairsModal(this,'you')"
+               aria-label="Candidate score {{ job.candidate_score or 0 }} — click to see preference match details"
+               title="Click to see your preference match details">
+            <div class="arc-ring-wrap">
+              <svg viewBox="0 0 60 60" class="arc-svg" aria-hidden="true">
+                <circle class="arc-track" cx="30" cy="30" r="22"/>
+                <circle class="arc-fill arc-fill-you" cx="30" cy="30" r="22"
+                        style="--score: {{ job.candidate_score or 0 }}"/>
+              </svg>
+              <span class="arc-value" data-score="{{ job.candidate_score or 0 }}">{{ job.candidate_score or 0 }}</span>
+            </div>
+            <span class="arc-label">Your Match</span>
+          </div>
+          {% else %}
+          <div class="score-badge score-{{ (job.match_score * 10) | int }}">
+            {{ '%.0f' | format(job.match_score * 100) }}%
+          </div>
+          {% endif %}
+          <span class="status-badge status-{{ job.application_status }}">{{ job.application_status | replace('_', ' ') }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="job-card-actions" data-status="{{ job.application_status }}">
+      <!-- Left: bookmark/remove or add-to-list for hidden jobs -->
+      <div class="action-bookmark">
+        {% if job.is_hidden %}
+        <button class="status-btn status-btn-promote"
+                onclick="promoteJob('{{ profile_name }}', '{{ job.job_key }}', this)">
+          ↑ Add to list
+        </button>
+        {% else %}
+        <button class="status-btn status-btn-save {% if job.saved %}active{% endif %}"
+                onclick="toggleSave('{{ profile_name }}', '{{ job.job_key }}', this)">
+          {{ '★ Saved' if job.saved else '☆ Save' }}
+        </button>
+        <button class="status-btn status-btn-remove"
+                title="Remove from recommended list"
+                onclick="removeJob('{{ profile_name }}', '{{ job.job_key }}', this)">
+          ✕ Remove
+        </button>
+        {% endif %}
+      </div>
+
+      <div class="action-section-divider"></div>
+
+      <!-- Middle: application stage buttons (radio-style, one active at a time) -->
+      <div class="action-stages status-buttons">
+        {% set stages = [('applied','Applied'),('phone_screen','Phone Screen'),
+                         ('interview_1','Interview'),('interview_2','2nd Interview'),('interview_3','3rd Interview'),
+                         ('offer','Offer'),('rejected','Reject'),('withdrawn','Withdraw')] %}
+        {% for val, label in stages %}
+        <button class="status-btn stage-btn {% if job.application_status == val %}active{% endif %}"
+                data-status-val="{{ val }}"
+                onclick="setStage('{{ profile_name }}', '{{ job.job_key }}', '{{ val }}', this)">
+          {{ label }}
+        </button>
+        {% endfor %}
+        <button class="status-btn-more" onclick="toggleStatusExpand(this)" title="Show all stages" aria-label="Show all stages">···</button>
+      </div>
+
+      <!-- Right: detail page link -->
+      <div class="card-secondary-actions">
+        <a href="{{ url_for('job_detail', name=profile_name, job_key=job.job_key) }}" class="btn btn-ghost btn-sm">Full Detail</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  {% if status_filter == 'new' %}
+    <h2>No new recommendations</h2>
+    <p>Run the pipeline to fetch and score new jobs for your profile.</p>
+    <pre>python src/pipeline.py --profile {{ profile_name }}</pre>
+  {% elif status_filter == 'saved' %}
+    <h2>Nothing saved yet</h2>
+    <p>Browse your <a href="?status=new&sort={{ sort_by }}">new matches</a> and save the ones worth tracking.</p>
+  {% elif status_filter == 'applied' %}
+    <h2>No active applications</h2>
+    <p>When you apply to a job, mark it here to track your progress.</p>
+  {% elif status_filter == 'interviewing' %}
+    <h2>No interviews yet</h2>
+    <p>Interviews will appear here once you move an application to the interview stage.</p>
+  {% elif status_filter == 'offer' %}
+    <h2>No offers yet</h2>
+    <p>Keep going — offers will show up here when you get them.</p>
+  {% elif status_filter == 'rejected' %}
+    <h2>No rejections recorded</h2>
+    <p>That's a good sign. Check your <a href="?status=applied&sort={{ sort_by }}">active applications</a>.</p>
+  {% elif status_filter == 'hidden' %}
+    <h2>No hidden jobs</h2>
+    <p>Jobs you remove from the list, or scored jobs below the top-N threshold, will appear here.</p>
+  {% elif status_filter == 'missing_info' %}
+    <h2>No jobs with missing info</h2>
+    <p>All fetched jobs have sufficient descriptions for AI scoring.</p>
+  {% else %}
+    <h2>Nothing here</h2>
+    <p><a href="?status=all&sort={{ sort_by }}">View all jobs</a> or run the pipeline to fetch new matches.</p>
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- Match pairs modal — shared across all job cards on the page -->
+<div id="pairs-modal" class="pairs-modal-overlay" onclick="closePairsModal(event)" role="dialog" aria-modal="true" aria-labelledby="pairs-modal-title">
+  <div class="pairs-modal">
+    <div class="pairs-modal-header">
+      <span id="pairs-modal-title"></span>
+      <button class="pairs-modal-close" onclick="document.getElementById('pairs-modal').classList.remove('open')" aria-label="Close">×</button>
+    </div>
+    <div id="pairs-modal-body" class="pairs-modal-body"></div>
+  </div>
+</div>
+
+<!-- Full description modal -->
+<div id="desc-modal" class="desc-modal-overlay" onclick="closeDescModal(event)" role="dialog" aria-modal="true" aria-labelledby="desc-modal-title">
+  <div class="desc-modal">
+    <div class="desc-modal-header">
+      <div class="desc-modal-title-block">
+        <h2 id="desc-modal-title" class="desc-modal-job-title"></h2>
+        <p class="desc-modal-company"></p>
+      </div>
+      <div class="desc-modal-scores">
+        <div class="desc-score-bar-row">
+          <span class="desc-score-label">Manager Match</span>
+          <div class="desc-score-track"><div class="desc-score-fill desc-score-mgr"></div></div>
+          <span class="desc-score-pct desc-score-mgr-pct"></span>
+        </div>
+        <div class="desc-score-bar-row">
+          <span class="desc-score-label">Your Match</span>
+          <div class="desc-score-track"><div class="desc-score-fill desc-score-you"></div></div>
+          <span class="desc-score-pct desc-score-you-pct"></span>
+        </div>
+      </div>
+    </div>
+    <div class="desc-modal-ai-row">
+      <div class="desc-modal-mgr-pane">
+        <span class="ai-note-label">Manager's Take</span>
+        <div class="desc-modal-mgr-body"></div>
+      </div>
+      <div class="desc-modal-you-pane">
+        <span class="ai-note-label">What's In It For You</span>
+        <div class="desc-modal-you-body"></div>
+      </div>
+    </div>
+    <div class="desc-modal-body">
+      <h3 class="desc-modal-section-title">Description</h3>
+      <div class="desc-expand-wrap">
+        <div id="desc-modal-text" class="desc-modal-text"></div>
+        <button class="desc-expand-btn" onclick="toggleDescExpand()" aria-expanded="false">Read more ↓</button>
+      </div>
+    </div>
+    <div class="desc-modal-footer">
+      <button class="btn btn-ghost" onclick="closeDescModal()">↑ Close</button>
+      <a class="btn btn-apply desc-modal-apply" href="#" target="_blank" rel="noopener">Apply →</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

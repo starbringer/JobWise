@@ -1,0 +1,40 @@
+# Secrets & credentials
+.env
+
+# Data & databases
+data/
+*.db
+
+# Logs
+logs/
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# OS
+.DS_Store
+
+# Personal / private content
+profiles
+research
+config/config.yaml
+config/preferred_companies.txt
+logic-detail.md
+
+# AI tool configs (local only)
+.roo
+.claude
+.roomodes
+.impeccable.md
+
+# Dev scripts
+test_phase1.py
+plans
+ui-change
