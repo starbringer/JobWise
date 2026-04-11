@@ -67,9 +67,84 @@ def _run_pipeline_bg(name: str) -> None:
             })
 
 
+# ---------------------------------------------------------------------------
+# Default configuration — used when config.yaml does not yet exist.
+# Mirrors config.sample.yaml so the app is fully functional out of the box.
+# ---------------------------------------------------------------------------
+_DEFAULT_CONFIG: dict = {
+    "ai": {
+        "provider": "claude_cli",
+        "claude_cli":  {"model": "claude-sonnet-4-6"},
+        "anthropic":   {"model": "claude-haiku-4-5-20251001"},
+        "openai":      {"model": "gpt-4o"},
+        "gemini":      {"model": "gemini-2.0-flash"},
+        "ollama":      {"model": "gemma2:9b", "host": "http://localhost", "port": 11434},
+    },
+    "top_n": 50,
+    "top_n_display": 50,
+    "jsearch_queries_per_run": 10,
+    "sources": {
+        "greenhouse": True,
+        "lever": True,
+        "jsearch": True,
+        "jobspy": True,
+        "max_ats_companies_per_run": 20,
+    },
+    "jobspy": {"sites": ["linkedin", "indeed"], "results_per_site": 25},
+    "scheduler": {"enabled": False, "run_times": ["11:00", "18:00"], "profiles": []},
+    "api": {"jsearch_reset_day": 1},
+    "web": {"host": "0.0.0.0", "port": 5000, "debug": False},
+    "database": {"path": "data/jobs.db"},
+    "profiles_dir": "profiles",
+    "job_retention_days": 30,
+    "logging": {
+        "level": "INFO",
+        "file": "logs/pipeline.log",
+        "max_bytes": 5242880,
+        "backup_count": 3,
+    },
+    "ranker": {
+        "batch_size": 50,
+        "min_match_score": 0.4,
+        "description_max_chars": 3500,
+        "scoring": {
+            "manager": {
+                "required": 10, "preferred": 5, "nice_to_have": 5,
+                "unknown": 1, "extra_skill": 2,
+            },
+            "candidate": {"must_have": 10, "nice_to_have": 7, "unknown": 5},
+        },
+    },
+}
+
+
 def load_config() -> dict:
-    with open(PROJECT_ROOT / "config" / "config.yaml", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+    """Load config.yaml, falling back to _DEFAULT_CONFIG if the file is absent.
+
+    The fallback lets the app start and the Settings page render correctly even
+    before the user has created a config file.  The first save from the Settings
+    page will write config.yaml to disk.
+    """
+    import copy
+    cfg_path = PROJECT_ROOT / "config" / "config.yaml"
+    if not cfg_path.exists():
+        return copy.deepcopy(_DEFAULT_CONFIG)
+    with open(cfg_path, encoding="utf-8") as f:
+        on_disk = yaml.safe_load(f) or {}
+    # Merge: defaults supply any keys absent from the file (e.g. a key added in
+    # a newer version that isn't in the user's existing config.yaml yet).
+    merged = copy.deepcopy(_DEFAULT_CONFIG)
+    _deep_merge(merged, on_disk)
+    return merged
+
+
+def _deep_merge(base: dict, override: dict) -> None:
+    """Recursively merge *override* into *base* in-place (override wins)."""
+    for key, val in override.items():
+        if key in base and isinstance(base[key], dict) and isinstance(val, dict):
+            _deep_merge(base[key], val)
+        else:
+            base[key] = val
 
 
 def get_db():
@@ -734,6 +809,147 @@ def profile_stats(name):
         source_counts={r["source"]: r["cnt"] for r in by_source},
         runs=runs,
     )
+
+
+@app.route("/settings")
+def settings():
+    config = load_config()
+    config_exists = (PROJECT_ROOT / "config" / "config.yaml").exists()
+    return render_template("settings.html", config=config, config_exists=config_exists)
+
+
+@app.route("/api/settings/save", methods=["POST"])
+def save_settings():
+    """Write a subset of config.yaml fields sent as JSON. Takes effect immediately (config is
+    reloaded per-request). Note: web.host / web.port changes require a server restart."""
+    try:
+        data = request.json or {}
+        config_path = PROJECT_ROOT / "config" / "config.yaml"
+        config = load_config()
+
+        # ── AI provider ────────────────────────────────────────────────────────
+        if "ai" in data:
+            ai = data["ai"]
+            if "provider" in ai:
+                config["ai"]["provider"] = ai["provider"]
+            for provider in ("claude_cli", "anthropic", "openai", "gemini"):
+                if provider in ai and "model" in ai[provider]:
+                    config["ai"].setdefault(provider, {})["model"] = ai[provider]["model"]
+            if "ollama" in ai:
+                o = ai["ollama"]
+                config["ai"].setdefault("ollama", {})
+                for k in ("model", "host", "port"):
+                    if k in o:
+                        config["ai"]["ollama"][k] = o[k]
+
+        # ── Pipeline top-level ─────────────────────────────────────────────────
+        for key in ("top_n", "top_n_display", "jsearch_queries_per_run", "job_retention_days"):
+            if key in data:
+                config[key] = int(data[key])
+
+        # ── API credentials / quota ────────────────────────────────────────────
+        if "api" in data:
+            if "jsearch_reset_day" in data["api"]:
+                config["api"]["jsearch_reset_day"] = int(data["api"]["jsearch_reset_day"])
+
+        # ── Sources ────────────────────────────────────────────────────────────
+        if "sources" in data:
+            s = data["sources"]
+            for src in ("greenhouse", "lever", "jsearch", "jobspy"):
+                if src in s:
+                    config["sources"][src] = bool(s[src])
+            if "max_ats_companies_per_run" in s:
+                config["sources"]["max_ats_companies_per_run"] = int(s["max_ats_companies_per_run"])
+
+        # ── JobSpy ────────────────────────────────────────────────────────────
+        if "jobspy" in data:
+            j = data["jobspy"]
+            if "sites" in j:
+                config["jobspy"]["sites"] = j["sites"]
+            if "results_per_site" in j:
+                config["jobspy"]["results_per_site"] = int(j["results_per_site"])
+
+        # ── Ranker ────────────────────────────────────────────────────────────
+        if "ranker" in data:
+            r = data["ranker"]
+            for k in ("batch_size", "description_max_chars"):
+                if k in r:
+                    config["ranker"][k] = int(r[k])
+            if "min_match_score" in r:
+                config["ranker"]["min_match_score"] = float(r["min_match_score"])
+            if "scoring" in r:
+                sc = r["scoring"]
+                for side in ("manager", "candidate"):
+                    if side in sc:
+                        for k, v in sc[side].items():
+                            config["ranker"]["scoring"][side][k] = int(v)
+
+        # ── Scheduler ─────────────────────────────────────────────────────────
+        if "scheduler" in data:
+            sch = data["scheduler"]
+            if "enabled" in sch:
+                config["scheduler"]["enabled"] = bool(sch["enabled"])
+            if "run_times" in sch:
+                config["scheduler"]["run_times"] = sch["run_times"]
+            if "profiles" in sch:
+                config["scheduler"]["profiles"] = sch["profiles"]
+
+        # ── Logging ───────────────────────────────────────────────────────────
+        if "logging" in data:
+            lg = data["logging"]
+            if "level" in lg:
+                config["logging"]["level"] = lg["level"]
+            if "file" in lg:
+                config["logging"]["file"] = lg["file"]
+
+        # ── Web (restart required for host/port) ──────────────────────────────
+        if "web" in data:
+            w = data["web"]
+            if "host" in w:
+                config["web"]["host"] = w["host"]
+            if "port" in w:
+                config["web"]["port"] = int(w["port"])
+
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(config_path, "w", encoding="utf-8") as f:
+            yaml.dump(config, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+
+        return jsonify({"ok": True})
+    except Exception as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 500
+
+
+@app.route("/profile/<name>/import_companies", methods=["POST"])
+def import_companies(name):
+    """Import companies from the global preferred_companies.txt into the profile's
+    preferred_companies list. One-time migration helper — idempotent."""
+    conn = get_db()
+    profile = database.get_profile(conn, name)
+    if not profile:
+        conn.close()
+        abort(404)
+
+    config = load_config()
+    preferred_file = PROJECT_ROOT / config.get(
+        "preferred_companies_file", "config/preferred_companies.txt"
+    )
+    companies = []
+    if preferred_file.exists():
+        for line in preferred_file.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line and not line.startswith("#"):
+                companies.append(line)
+
+    structured = json.loads(profile["structured_content"] or "{}")
+    existing = set(structured.get("preferred_companies") or [])
+    added = 0
+    for company in companies:
+        if company not in existing:
+            database.update_profile_field(conn, name, "preferred_companies", "add", company)
+            added += 1
+
+    conn.close()
+    return jsonify({"ok": True, "added": added, "total": len(companies)})
 
 
 @app.route("/api/pipeline/run/<name>", methods=["POST"])

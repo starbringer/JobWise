@@ -70,16 +70,17 @@ def setup_logging(config: dict) -> None:
     )
 
 
-def load_preferred_companies(config: dict) -> list[str]:
-    path = PROJECT_ROOT / config.get("preferred_companies_file", "config/preferred_companies.txt")
-    if not path.exists():
-        return []
-    companies = []
-    for line in path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if line and not line.startswith("#"):
-            companies.append(line)
-    return companies
+def load_preferred_companies(config: dict, profile: dict | None = None) -> list[str]:
+    """Return the preferred-companies list for a profile run.
+
+    The list is read exclusively from the profile's ``preferred_companies`` field,
+    which is managed via the Profile page in the web UI.  Use the "Import from
+    global list" button there to migrate from the legacy .txt file.
+    """
+    if profile:
+        pc = profile.get("preferred_companies") or []
+        return [str(c).strip() for c in pc if str(c).strip()]
+    return []
 
 
 def _determine_search_mode(conn, profile_id: int, config: dict, force_full: bool) -> tuple[str, int]:
@@ -238,7 +239,7 @@ def run_fetch_jobs(profile_name: str, force_full: bool = False) -> dict:
 
     # Step 5: Build search plan
     jsearch_budget = config.get("jsearch_queries_per_run", 10)
-    preferred_companies = load_preferred_companies(config)
+    preferred_companies = load_preferred_companies(config, structured)
     search_plan = query_builder.build_search_plan(
         conn=conn,
         profile=structured,
@@ -473,7 +474,7 @@ def run_pipeline(profile_name: str, triggered_by: str = "manual", force_full: bo
 
     # Step 5: Build search plan
     jsearch_budget = config.get("jsearch_queries_per_run", 10)
-    preferred_companies = load_preferred_companies(config)
+    preferred_companies = load_preferred_companies(config, structured)
 
     search_plan = query_builder.build_search_plan(
         conn=conn,

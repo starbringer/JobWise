@@ -154,8 +154,21 @@
   {# ── Target Companies ───────────────────────────────────────── #}
   <div class="profile-section">
     <h3>Target Companies</h3>
-    <p class="section-hint">Companies you're interested in (soft preference — always searched).</p>
+    <p class="section-hint">Companies you're specifically interested in (soft preference — always searched, combined with Preferred Companies below).</p>
     {{ tag_list('target_companies', profile.target_companies, 'Add a company…', 'tag-company') }}
+  </div>
+
+  {# ── Preferred Companies ────────────────────────────────────── #}
+  <div class="profile-section">
+    <h3>Preferred Companies</h3>
+    <p class="section-hint">A curated list of employers searched every run regardless of AI query output — tier-1 targets, top-rated workplaces, etc. Searched via free ATS boards first; JSearch quota is only spent if the company has no Greenhouse/Lever board.</p>
+    {{ tag_list('preferred_companies', profile.preferred_companies, 'Add a company…', 'tag-company') }}
+    <div style="margin-top:.75rem">
+      <button class="btn-small" id="btn-import-companies" onclick="importGlobalCompanies()" title="One-time import from the global config/preferred_companies.txt file">
+        Import from global list
+      </button>
+      <span id="import-companies-status" style="margin-left:.75rem;font-size:.82rem;color:var(--text-muted)"></span>
+    </div>
   </div>
 
   {# ── Hard Requirements ──────────────────────────────────────── #}
@@ -218,4 +231,30 @@
   </div>
 
 </div>
+
+<script>
+function importGlobalCompanies() {
+  var btn = document.getElementById('btn-import-companies');
+  var status = document.getElementById('import-companies-status');
+  btn.disabled = true;
+  btn.textContent = 'Importing…';
+  fetch('{{ url_for("import_companies", name=profile_name) }}', { method: 'POST' })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      btn.disabled = false;
+      btn.textContent = 'Import from global list';
+      if (d.ok) {
+        status.textContent = d.added + ' companies added (' + d.total + ' in global list). Reload to see them.';
+        if (d.added > 0) setTimeout(function(){ location.reload(); }, 1200);
+      } else {
+        status.textContent = 'Import failed.';
+      }
+    })
+    .catch(function() {
+      btn.disabled = false;
+      btn.textContent = 'Import from global list';
+      status.textContent = 'Import failed — server error.';
+    });
+}
+</script>
 {% endblock %}

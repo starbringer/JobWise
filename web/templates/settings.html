@@ -1,0 +1,581 @@
+{% extends "base.html" %}
+{% block title %}Settings — JobWise{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="header-row">
+    <div>
+      <h1>Settings</h1>
+      <p class="subtitle">Changes sync to <code>config/config.yaml</code> and take effect immediately — no restart needed, except for Web Server host/port.</p>
+    </div>
+  </div>
+</div>
+
+{% if not config_exists %}
+<div class="flash-msg" style="background:var(--warning-light);color:var(--warning);border:1px solid var(--warning);margin-bottom:1rem">
+  <strong>No config.yaml found.</strong> Showing built-in defaults — click <em>Save</em> in any section to create the file and lock in your settings.
+</div>
+{% endif %}
+
+<div id="settings-flash" class="flash-msg" style="display:none"></div>
+
+<div class="profile-detail">
+
+  {# ── AI Provider ──────────────────────────────────────────── #}
+  <div class="profile-section" id="section-ai">
+    <h3>AI Provider</h3>
+    <p class="section-hint">Select which AI service scores your jobs. All providers require the matching API key in your <code>.env</code> file except <code>claude_cli</code> and <code>ollama</code>.</p>
+
+    <div class="settings-grid">
+      <div class="settings-field">
+        <label class="settings-label">Provider</label>
+        <select id="ai-provider" class="scalar-input scalar-select" onchange="onProviderChange()">
+          {% for p in ['claude_cli','anthropic','openai','gemini','ollama'] %}
+          <option value="{{ p }}" {% if config.ai.provider == p %}selected{% endif %}>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    {% macro provider_block(key, label, env_var=None) %}
+    <div class="provider-cfg" id="cfg-{{ key }}" {% if config.ai.provider != key %}hidden{% endif %}>
+      <div class="settings-grid" style="margin-top:1rem">
+        <div class="settings-field">
+          <label class="settings-label">Model</label>
+          <input type="text" class="scalar-input" id="model-{{ key }}"
+                 value="{{ (config.ai[key] or {}).get('model','') if config.ai[key] else '' }}"
+                 placeholder="e.g. {{ {'claude_cli':'claude-haiku-4-5-20251001','anthropic':'claude-haiku-4-5-20251001','openai':'gpt-4o','gemini':'gemini-2.0-flash'}[key] if key != 'ollama' else 'gemma2:9b' }}">
+        </div>
+        {% if env_var %}
+        <div class="settings-field">
+          <label class="settings-label">API Key</label>
+          <div class="settings-hint-box">Set <code>{{ env_var }}</code> in your <code>.env</code> file — keys are never stored here.</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endmacro %}
+
+    {{ provider_block('claude_cli', 'Claude CLI') }}
+    {{ provider_block('anthropic', 'Anthropic', 'ANTHROPIC_API_KEY') }}
+    {{ provider_block('openai', 'OpenAI', 'OPENAI_API_KEY') }}
+    {{ provider_block('gemini', 'Google Gemini', 'GEMINI_API_KEY') }}
+
+    <div class="provider-cfg" id="cfg-ollama" {% if config.ai.provider != 'ollama' %}hidden{% endif %}>
+      <div class="settings-grid" style="margin-top:1rem">
+        <div class="settings-field">
+          <label class="settings-label">Model</label>
+          <input type="text" class="scalar-input" id="model-ollama"
+                 value="{{ (config.ai.ollama or {}).get('model','') if config.ai.ollama else '' }}"
+                 placeholder="e.g. gemma2:9b">
+        </div>
+        <div class="settings-field">
+          <label class="settings-label">Host</label>
+          <input type="text" class="scalar-input" id="ollama-host"
+                 value="{{ (config.ai.ollama or {}).get('host','http://localhost') if config.ai.ollama else 'http://localhost' }}"
+                 placeholder="http://localhost">
+        </div>
+        <div class="settings-field">
+          <label class="settings-label">Port</label>
+          <input type="number" class="scalar-input" id="ollama-port"
+                 value="{{ (config.ai.ollama or {}).get('port', 11434) if config.ai.ollama else 11434 }}"
+                 placeholder="11434">
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-actions">
+      <button class="btn-sync" onclick="saveSection('ai')">Save AI Settings</button>
+    </div>
+  </div>
+
+  {# ── Pipeline ─────────────────────────────────────────────── #}
+  <div class="profile-section" id="section-pipeline">
+    <h3>Pipeline</h3>
+    <p class="section-hint">Controls how many jobs are fetched, scored, and displayed per run.</p>
+    <div class="settings-grid">
+      <div class="settings-field">
+        <label class="settings-label">Max Jobs Promoted per Run <span class="settings-hint-inline">(top_n)</span></label>
+        <input type="number" class="scalar-input" id="top_n" value="{{ config.top_n }}" min="1" max="500">
+      </div>
+      <div class="settings-field">
+        <label class="settings-label">Max Visible Jobs per Profile <span class="settings-hint-inline">(top_n_display)</span></label>
+        <input type="number" class="scalar-input" id="top_n_display" value="{{ config.top_n_display }}" min="1" max="500">
+      </div>
+      <div class="settings-field">
+        <label class="settings-label">JSearch Queries per Run <span class="settings-hint-inline">(costs 1 API credit each)</span></label>
+        <input type="number" class="scalar-input" id="jsearch_queries_per_run" value="{{ config.jsearch_queries_per_run }}" min="0" max="200">
+      </div>
+      <div class="settings-field">
+        <label class="settings-label">Job Retention Window <span class="settings-hint-inline">(days before unactioned jobs are hidden)</span></label>
+        <input type="number" class="scalar-input" id="job_retention_days" value="{{ config.job_retention_days }}" min="1" max="365">
+      </div>
+    </div>
+    <div class="settings-actions">
+      <button class="btn-sync" onclick="saveSection('pipeline')">Save Pipeline Settings</button>
+    </div>
+  </div>
+
+  {# ── Job Sources ──────────────────────────────────────────── #}
+  <div class="profile-section" id="section-sources">
+    <h3>Job Sources</h3>
+    <p class="section-hint">Enable or disable individual job sources. Greenhouse and Lever are free ATS APIs. JSearch uses RapidAPI credits. JobSpy scrapes LinkedIn/Indeed.</p>
+    <div class="settings-grid">
+      <div class="settings-field">
+        <label class="settings-label">Greenhouse (free ATS)</label>
+        <label class="settings-toggle">
+          <input type="checkbox" id="src-greenhouse" {% if config.sources.greenhouse %}checked{% endif %}>
+          <span class="toggle-track"></span>
+          <span class="toggle-label">Enabled</span>
+        </label>
+      </div>
+      <div class="settings-field">
+        <label class="settings-label">Lever (free ATS)</label>
+        <label class="settings-toggle">
+          <input type="checkbox" id="src-lever" {% if config.sources.lever %}checked{% endif %}>
+          <span class="toggle-track"></span>
+          <span class="toggle-label">Enabled</span>
+        </label>
+      </div>
+      <div class="settings-field">
+        <label class="settings-label">JSearch (RapidAPI, uses quota)</label>
+        <label class="settings-toggle">
+          <input type="checkbox" id="src-jsearch" {% if config.sources.jsearch %}checked{% endif %}>
+          <span class="toggle-track"></span>
+          <span class="toggle-label">Enabled</span>
+        </label>
+      </div>
+      <div class="settings-field">
+        <label class="settings-label">JobSpy (LinkedIn / Indeed scraping)</label>
+        <label class="settings-toggle">
+          <input type="checkbox" id="src-jobspy" {% if config.sources.jobspy %}checked{% endif %}>
+          <span class="toggle-track"></span>
+          <span class="toggle-label">Enabled</span>
+        </label>
+      </div>
+      <div class="settings-field">
+        <label class="settings-label">Max ATS Companies per Run</label>
+        <input type="number" class="scalar-input" id="max_ats_companies_per_run"
+               value="{{ config.sources.max_ats_companies_per_run }}" min="1" max="200">
+      </div>
+    </div>
+
+    <h4 style="margin:1.2rem 0 .5rem">JSearch Options</h4>
+    <div class="settings-grid">
+      <div class="settings-field">
+        <label class="settings-label">Quota Reset Day <span class="settings-hint-inline">(day-of-month your RapidAPI subscription renews)</span></label>
+        <input type="number" class="scalar-input" id="jsearch_reset_day"
+               value="{{ config.api.jsearch_reset_day }}" min="1" max="31">
+      </div>
+    </div>
+
+    <h4 style="margin:1.2rem 0 .5rem">JobSpy Options</h4>
+    <div class="settings-grid">
+      <div class="settings-field">
+        <label class="settings-label">Sites</label>
+        <div class="checkbox-group">
+          <label class="settings-toggle">
+            <input type="checkbox" id="jobspy-linkedin"
+                   {% if 'linkedin' in (config.jobspy.sites or []) %}checked{% endif %}>
+            <span class="toggle-track"></span>
+            <span class="toggle-label">LinkedIn</span>
+          </label>
+          <label class="settings-toggle">
+            <input type="checkbox" id="jobspy-indeed"
+                   {% if 'indeed' in (config.jobspy.sites or []) %}checked{% endif %}>
+            <span class="toggle-track"></span>
+            <span class="toggle-label">Indeed</span>
+          </label>
+        </div>
+      </div>
+      <div class="settings-field">
+        <label class="settings-label">Results per Site</label>
+        <input type="number" class="scalar-input" id="jobspy_results_per_site"
+               value="{{ config.jobspy.results_per_site }}" min="1" max="100">
+      </div>
+    </div>
+    <div class="settings-actions">
+      <button class="btn-sync" onclick="saveSection('sources')">Save Source Settings</button>
+    </div>
+  </div>
+
+  {# ── Ranker ───────────────────────────────────────────────── #}
+  <div class="profile-section" id="section-ranker">
+    <h3>Ranker</h3>
+    <p class="section-hint">Controls AI batch sizes and scoring weights. Change scoring weights and run <code>python src/pipeline.py --repromote &lt;profile&gt;</code> to recompute without re-fetching jobs.</p>
+    <div class="settings-grid">
+      <div class="settings-field">
+        <label class="settings-label">Batch Size <span class="settings-hint-inline">(jobs per AI call)</span></label>
+        <input type="number" class="scalar-input" id="ranker_batch_size"
+               value="{{ config.ranker.batch_size }}" min="1" max="200">
+      </div>
+      <div class="settings-field">
+        <label class="settings-label">Min Match Score <span class="settings-hint-inline">(0.0–1.0 required-skill floor)</span></label>
+        <input type="number" class="scalar-input" id="ranker_min_match_score"
+               value="{{ config.ranker.min_match_score }}" min="0" max="1" step="0.05">
+      </div>
+      <div class="settings-field">
+        <label class="settings-label">Description Max Chars <span class="settings-hint-inline">(safety cap sent to AI)</span></label>
+        <input type="number" class="scalar-input" id="ranker_description_max_chars"
+               value="{{ config.ranker.description_max_chars }}" min="500" max="10000" step="100">
+      </div>
+    </div>
+
+    <h4 style="margin:1.2rem 0 .5rem">Manager-Side Scoring Weights</h4>
+    <div class="settings-grid">
+      {% set ms = config.ranker.scoring.manager %}
+      <div class="settings-field">
+        <label class="settings-label">Required skill match</label>
+        <input type="number" class="scalar-input" id="score-manager-required" value="{{ ms.required }}" min="0">
+      </div>
+      <div class="settings-field">
+        <label class="settings-label">Preferred skill match</label>
+        <input type="number" class="scalar-input" id="score-manager-preferred" value="{{ ms.preferred }}" min="0">
+      </div>
+      <div class="settings-field">
+        <label class="settings-label">Nice-to-have match</label>
+        <input type="number" class="scalar-input" id="score-manager-nice_to_have" value="{{ ms.nice_to_have }}" min="0">
+      </div>
+      <div class="settings-field">
+        <label class="settings-label">Unknown importance</label>
+        <input type="number" class="scalar-input" id="score-manager-unknown" value="{{ ms.unknown }}" min="0">
+      </div>
+      <div class="settings-field">
+        <label class="settings-label">Extra skill bonus</label>
+        <input type="number" class="scalar-input" id="score-manager-extra_skill" value="{{ ms.extra_skill }}" min="0">
+      </div>
+    </div>
+
+    <h4 style="margin:1.2rem 0 .5rem">Candidate-Side Scoring Weights</h4>
+    <div class="settings-grid">
+      {% set cs = config.ranker.scoring.candidate %}
+      <div class="settings-field">
+        <label class="settings-label">Must-have satisfied</label>
+        <input type="number" class="scalar-input" id="score-candidate-must_have" value="{{ cs.must_have }}" min="0">
+      </div>
+      <div class="settings-field">
+        <label class="settings-label">Nice-to-have satisfied</label>
+        <input type="number" class="scalar-input" id="score-candidate-nice_to_have" value="{{ cs.nice_to_have }}" min="0">
+      </div>
+      <div class="settings-field">
+        <label class="settings-label">Unknown priority</label>
+        <input type="number" class="scalar-input" id="score-candidate-unknown" value="{{ cs.unknown }}" min="0">
+      </div>
+    </div>
+    <div class="settings-actions">
+      <button class="btn-sync" onclick="saveSection('ranker')">Save Ranker Settings</button>
+    </div>
+  </div>
+
+  {# ── Scheduler ────────────────────────────────────────────── #}
+  <div class="profile-section" id="section-scheduler">
+    <h3>Scheduler</h3>
+    <p class="section-hint">Option A (Windows): run <code>scheduler\install-task.bat</code> as Administrator after changing <em>Run Times</em> — the task reads them from config.yaml.<br>
+    Option B (Daemon): enable the toggle below and run <code>python scheduler/scheduler.py</code>.</p>
+    <div class="settings-grid">
+      <div class="settings-field">
+        <label class="settings-label">Daemon Mode</label>
+        <label class="settings-toggle">
+          <input type="checkbox" id="scheduler-enabled" {% if config.scheduler.enabled %}checked{% endif %}>
+          <span class="toggle-track"></span>
+          <span class="toggle-label">Enabled</span>
+        </label>
+      </div>
+    </div>
+    <div class="settings-field" style="margin-top:1rem">
+      <label class="settings-label">Run Times <span class="settings-hint-inline">(24-hour HH:MM, one per line)</span></label>
+      <textarea id="scheduler-run_times" class="scalar-input" rows="4"
+                style="resize:none;overflow:hidden;field-sizing:content;font-family:var(--font-mono);width:12rem">{{ (config.scheduler.run_times or []) | join('\n') }}</textarea>
+    </div>
+    <div class="settings-field" style="margin-top:1rem">
+      <label class="settings-label">Scheduled Profiles <span class="settings-hint-inline">(profile names, one per line; empty = all profiles)</span></label>
+      <textarea id="scheduler-profiles" class="scalar-input" rows="3"
+                style="resize:none;overflow:hidden;field-sizing:content;font-family:var(--font-mono);width:16rem">{{ (config.scheduler.profiles or []) | join('\n') }}</textarea>
+    </div>
+    <div class="settings-actions">
+      <button class="btn-sync" onclick="saveSection('scheduler')">Save Scheduler Settings</button>
+    </div>
+  </div>
+
+  {# ── Logging ──────────────────────────────────────────────── #}
+  <div class="profile-section" id="section-logging">
+    <h3>Logging</h3>
+    <div class="settings-grid">
+      <div class="settings-field">
+        <label class="settings-label">Log Level</label>
+        <select class="scalar-input scalar-select" id="logging-level">
+          {% for lvl in ['DEBUG','INFO','WARNING','ERROR'] %}
+          <option value="{{ lvl }}" {% if config.logging.level == lvl %}selected{% endif %}>{{ lvl }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="settings-field">
+        <label class="settings-label">Log File Path</label>
+        <input type="text" class="scalar-input" id="logging-file"
+               value="{{ config.logging.file }}" placeholder="logs/pipeline.log">
+      </div>
+    </div>
+    <div class="settings-actions">
+      <button class="btn-sync" onclick="saveSection('logging')">Save Logging Settings</button>
+    </div>
+  </div>
+
+  {# ── Web Server ───────────────────────────────────────────── #}
+  <div class="profile-section" id="section-web">
+    <h3>Web Server</h3>
+    <p class="section-hint"><strong>Restart required</strong> for host/port changes to take effect.</p>
+    <div class="settings-grid">
+      <div class="settings-field">
+        <label class="settings-label">Host</label>
+        <input type="text" class="scalar-input" id="web-host"
+               value="{{ config.web.host }}" placeholder="0.0.0.0">
+      </div>
+      <div class="settings-field">
+        <label class="settings-label">Port</label>
+        <input type="number" class="scalar-input" id="web-port"
+               value="{{ config.web.port }}" min="1" max="65535">
+      </div>
+    </div>
+    <div class="settings-actions">
+      <button class="btn-sync" onclick="saveSection('web')">Save Web Settings</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+
+  // ── Provider show/hide ──────────────────────────────────────────────────────
+  window.onProviderChange = function () {
+    var sel = document.getElementById('ai-provider').value;
+    ['claude_cli','anthropic','openai','gemini','ollama'].forEach(function (p) {
+      var el = document.getElementById('cfg-' + p);
+      if (el) el.hidden = (p !== sel);
+    });
+  };
+
+  // ── Flash helper ────────────────────────────────────────────────────────────
+  function flash(msg, ok) {
+    var el = document.getElementById('settings-flash');
+    el.textContent = msg;
+    el.style.display = 'block';
+    el.style.background = ok ? 'var(--success-light)' : 'var(--danger-light)';
+    el.style.color      = ok ? 'var(--success)'       : 'var(--danger)';
+    clearTimeout(el._t);
+    el._t = setTimeout(function () { el.style.display = 'none'; }, 3500);
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ── Section payloads ────────────────────────────────────────────────────────
+  function getPayload(section) {
+    if (section === 'ai') {
+      var provider = document.getElementById('ai-provider').value;
+      var payload = { ai: { provider: provider } };
+      ['claude_cli','anthropic','openai','gemini'].forEach(function (p) {
+        var el = document.getElementById('model-' + p);
+        if (el) payload.ai[p] = { model: el.value };
+      });
+      payload.ai.ollama = {
+        model: document.getElementById('model-ollama').value,
+        host:  document.getElementById('ollama-host').value,
+        port:  parseInt(document.getElementById('ollama-port').value) || 11434,
+      };
+      return payload;
+    }
+    if (section === 'pipeline') {
+      return {
+        top_n:                    parseInt(document.getElementById('top_n').value),
+        top_n_display:            parseInt(document.getElementById('top_n_display').value),
+        jsearch_queries_per_run:  parseInt(document.getElementById('jsearch_queries_per_run').value),
+        job_retention_days:       parseInt(document.getElementById('job_retention_days').value),
+      };
+    }
+    if (section === 'sources') {
+      var sites = [];
+      if (document.getElementById('jobspy-linkedin').checked) sites.push('linkedin');
+      if (document.getElementById('jobspy-indeed').checked) sites.push('indeed');
+      return {
+        sources: {
+          greenhouse: document.getElementById('src-greenhouse').checked,
+          lever:      document.getElementById('src-lever').checked,
+          jsearch:    document.getElementById('src-jsearch').checked,
+          jobspy:     document.getElementById('src-jobspy').checked,
+          max_ats_companies_per_run: parseInt(document.getElementById('max_ats_companies_per_run').value),
+        },
+        api: {
+          jsearch_reset_day: parseInt(document.getElementById('jsearch_reset_day').value),
+        },
+        jobspy: {
+          sites: sites,
+          results_per_site: parseInt(document.getElementById('jobspy_results_per_site').value),
+        },
+      };
+    }
+    if (section === 'ranker') {
+      return {
+        ranker: {
+          batch_size:            parseInt(document.getElementById('ranker_batch_size').value),
+          min_match_score:       parseFloat(document.getElementById('ranker_min_match_score').value),
+          description_max_chars: parseInt(document.getElementById('ranker_description_max_chars').value),
+          scoring: {
+            manager: {
+              required:     parseInt(document.getElementById('score-manager-required').value),
+              preferred:    parseInt(document.getElementById('score-manager-preferred').value),
+              nice_to_have: parseInt(document.getElementById('score-manager-nice_to_have').value),
+              unknown:      parseInt(document.getElementById('score-manager-unknown').value),
+              extra_skill:  parseInt(document.getElementById('score-manager-extra_skill').value),
+            },
+            candidate: {
+              must_have:    parseInt(document.getElementById('score-candidate-must_have').value),
+              nice_to_have: parseInt(document.getElementById('score-candidate-nice_to_have').value),
+              unknown:      parseInt(document.getElementById('score-candidate-unknown').value),
+            },
+          },
+        },
+      };
+    }
+    if (section === 'scheduler') {
+      var timesRaw = document.getElementById('scheduler-run_times').value;
+      var profRaw  = document.getElementById('scheduler-profiles').value;
+      var times = timesRaw.split('\n').map(function(s){return s.trim();}).filter(Boolean);
+      var profs = profRaw.split('\n').map(function(s){return s.trim();}).filter(Boolean);
+      return {
+        scheduler: {
+          enabled:   document.getElementById('scheduler-enabled').checked,
+          run_times: times,
+          profiles:  profs,
+        },
+      };
+    }
+    if (section === 'logging') {
+      return {
+        logging: {
+          level: document.getElementById('logging-level').value,
+          file:  document.getElementById('logging-file').value,
+        },
+      };
+    }
+    if (section === 'web') {
+      return {
+        web: {
+          host: document.getElementById('web-host').value,
+          port: parseInt(document.getElementById('web-port').value),
+        },
+      };
+    }
+    return {};
+  }
+
+  // ── Save ────────────────────────────────────────────────────────────────────
+  window.saveSection = function (section) {
+    var payload = getPayload(section);
+    fetch('/api/settings/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d.ok) {
+        flash('Settings saved.', true);
+      } else {
+        flash('Save failed: ' + (d.error || 'unknown error'), false);
+      }
+    })
+    .catch(function (e) { flash('Save failed: ' + e, false); });
+  };
+
+}());
+</script>
+
+<style>
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem 1.5rem;
+}
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+}
+.settings-label {
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.settings-hint-inline {
+  font-weight: 400;
+  text-transform: none;
+  color: var(--text-subtle);
+  font-size: .75rem;
+  letter-spacing: 0;
+}
+.settings-hint-box {
+  background: var(--surface-2);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: .5rem .75rem;
+  font-size: .82rem;
+  color: var(--text-muted);
+}
+.settings-actions {
+  margin-top: 1.25rem;
+  padding-top: .75rem;
+  border-top: 1px solid var(--border-light);
+}
+.checkbox-group {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+/* Toggle switch */
+.settings-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  cursor: pointer;
+  user-select: none;
+}
+.settings-toggle input[type=checkbox] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggle-track {
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--border);
+  position: relative;
+  transition: background .2s;
+  flex-shrink: 0;
+}
+.toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform .2s;
+}
+.settings-toggle input:checked ~ .toggle-track {
+  background: var(--primary);
+}
+.settings-toggle input:checked ~ .toggle-track::after {
+  transform: translateX(16px);
+}
+.toggle-label {
+  font-size: .85rem;
+  color: var(--text-muted);
+}
+</style>
+{% endblock %}

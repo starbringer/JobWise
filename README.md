@@ -43,7 +43,8 @@ This opens a terminal window running the app. **To stop JobWise**, switch to tha
 - **Application tracking** — move jobs through a full pipeline (applied → phone screen → interviews → offer/rejected) and save bookmarks; saved and active-stage jobs are never auto-removed
 - **Incremental runs** — only new jobs are fetched and scored on repeat runs
 - **Resume as profile** — drop in your resume as `.txt`, `.md`, `.pdf`, or `.docx` to get started instantly
-- **Preferred companies** — pin a list of companies that are always searched on every run
+- **Preferred companies** — pin a per-profile list of companies that are always searched on every run, editable directly in the profile page
+- **Settings UI** — configure AI provider, pipeline limits, job sources, scoring weights, and scheduler from the browser; changes sync to `config.yaml` and take effect immediately without restarting
 - **Web UI** — browse matches, edit your profile, view pipeline history, and choose from 9 color themes (Pine, Black, Forest, Midnight, Ocean, Sunset, Lavender, Linen, Fjord); mobile-friendly — accessible from any device on the same Wi-Fi network
 - **Scheduler** — runs automatically via Windows Task Scheduler or cron
 
@@ -176,15 +177,7 @@ copy config\config.sample.yaml config\config.yaml
 cp config/config.sample.yaml config/config.yaml
 ```
 
-Open `config/config.yaml` and update:
-
-```yaml
-ai:
-  provider: gemini
-
-api:
-  jsearch_reset_day: 5
-```
+Copy `config.sample.yaml` to `config.yaml` — no manual edits required at this point. All settings (AI provider, model, pipeline limits, job sources, JSearch quota reset day, scoring weights, scheduler, and more) can be configured from the **Settings** tab in the web UI after the app starts. Changes sync to `config.yaml` instantly without restarting the server.
 
 ### Step 7 — Create your profile
 
@@ -245,8 +238,8 @@ jobwise/
 ├── start.bat / start.sh         # Daily launcher — opens the web app
 ├── setup_wizard.py              # Setup wizard script (called by setup.bat/sh)
 ├── config/
-│   ├── config.yaml              # All settings
-│   └── preferred_companies.txt  # Always-searched companies
+│   ├── config.yaml              # All settings (editable via Settings tab in the UI)
+│   └── preferred_companies.txt  # Legacy: per-profile list is now in the profile page
 ├── profiles/
 │   └── yourname.txt             # Your career profile (plain text)
 ├── data/                        # Created automatically on first run

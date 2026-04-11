@@ -21,6 +21,7 @@
     <div class="nav-links">
       <a href="{{ url_for('index') }}" {% if request.endpoint in ['index', 'profile_jobs', 'profile_structured', 'job_detail', 'sync_profile', 'profile_stats'] %}class="active"{% endif %}>Profiles</a>
       <a href="{{ url_for('jobs_database') }}" {% if request.endpoint == 'jobs_database' %}class="active"{% endif %}>Database</a>
+      <a href="{{ url_for('settings') }}" {% if request.endpoint == 'settings' %}class="active"{% endif %}>Settings</a>
     </div>
     <div class="theme-switcher" id="themeSwitcher">
       <button class="theme-btn" id="themeBtn" onclick="toggleThemePanel()" aria-haspopup="true" aria-expanded="false">
