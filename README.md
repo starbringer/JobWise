@@ -14,22 +14,24 @@ A self-hosted, AI-powered job search assistant. It fetches postings from multipl
 
 ## ⚡ Quick Start
 
-**New here? One-click setup — takes about 5 minutes.**
+**No Git, no Terminal, no technical knowledge needed. Just download and double-click.**
 
-| Platform | What to do |
-|----------|-----------|
-| **Windows** | Double-click **`setup.bat`** in the project folder |
-| **Mac / Linux** | Run `bash setup.sh` in the project folder |
+| Platform | Download | Then… |
+|----------|----------|-------|
+| **Windows** | [**JobWise-Setup.exe**](https://github.com/starbringer/JobWise/releases/latest/download/JobWise-Setup.exe) | Double-click the downloaded file |
+| **Mac** | [**JobWise-Mac.dmg**](https://github.com/starbringer/JobWise/releases/latest/download/JobWise-Mac.dmg) | Open the DMG, then double-click **Install JobWise** |
 
-The setup wizard walks you through everything: installing packages, getting API keys (with step-by-step instructions), setting up your profile, and opening the web app.
+The installer bundles everything — no separate downloads happen during installation (only Python is fetched automatically if you don't have it). A setup wizard walks you through your API keys and profile when the installer finishes.
 
-**After setup, to open JobWise:**
-- **Windows** — double-click **`start.bat`**
-- **Mac / Linux** — run `bash start.sh`
+> **Mac note:** macOS may warn "app from unidentified developer" on first open. Right-click the `.command` file inside the DMG → **Open** → **Open** to allow it once.
 
-This opens a terminal window running the app. **To stop JobWise**, switch to that terminal and press `Ctrl+C` (or just close the terminal window). Closing the browser tab alone does not stop it.
+**After setup, to open JobWise each day:**
+- **Windows** — double-click **`start.bat`** in your `JobWise` folder (default: `C:\Users\YourName\JobWise`)
+- **Mac** — double-click **`start.sh`** in your `JobWise` folder (default: `~/JobWise`)
 
-> Already comfortable with Python? See [For Technical Users](#for-technical-users) below for the manual setup.
+This opens a terminal window running the app. **To stop JobWise**, switch to that terminal and press `Ctrl+C` (or close the terminal window). Closing the browser tab alone does not stop it.
+
+> Already comfortable with Python and Git? See [For Technical Users](#for-technical-users) below for the manual setup.
 
 ---
 
@@ -92,19 +94,11 @@ No pressure at all — the software is and always will be free. But if you land 
 
 ## For Non-Technical Users
 
-The easiest way to get started is the **setup wizard** — see the [Quick Start](#-quick-start) section above. It walks you through every step with instructions on screen and takes about 5 minutes.
-
-**The only prerequisite you need to install yourself is Python:**
-
-1. Download Python 3.11 or later from [python.org](https://python.org)
-2. During installation, tick **"Add Python to PATH"** before clicking Install
-3. Then double-click **`setup.bat`** (Windows) or run `bash setup.sh` (Mac/Linux)
-
-The wizard handles everything else: packages, API keys (with step-by-step signup instructions), your profile, config files, and optionally the automatic scheduler.
+The easiest way to get started is the one-click installer — see the [Quick Start](#-quick-start) section above. Download one file, double-click it, and the installer handles everything: Python (if not already installed), all packages, your API keys, and your profile. It takes about 5 minutes.
 
 **After setup, daily use:**
-- **Windows** — double-click **`start.bat`**
-- **Mac/Linux** — run `bash start.sh`
+- **Windows** — double-click **`start.bat`** in your `JobWise` folder
+- **Mac** — double-click **`start.sh`** in your `JobWise` folder
 
 This opens a terminal window running the app. **To stop JobWise**, switch to that terminal and press `Ctrl+C` (or just close the terminal window). Closing the browser tab alone does not stop it.
 
@@ -234,9 +228,13 @@ JSearch credits are spent only on companies without a free Greenhouse/Lever boar
 
 ```
 jobwise/
-├── setup.bat / setup.sh         # One-click setup wizard (start here!)
+├── installer/
+│   ├── windows/jobwise.nsi      # NSIS script — builds JobWise-Setup.exe (via GitHub Actions)
+│   └── mac/install.command      # Script bundled inside JobWise-Mac.dmg
+├── .github/workflows/release.yml # Builds installers and attaches them to GitHub Releases
+├── setup.bat / setup.sh         # Setup wizard launcher (used after manual/git install)
 ├── start.bat / start.sh         # Daily launcher — opens the web app
-├── setup_wizard.py              # Setup wizard script (called by setup.bat/sh)
+├── setup_wizard.py              # Setup wizard script (called by installers and setup.bat/sh)
 ├── config/
 │   ├── config.yaml              # All settings (editable via Settings tab in the UI)
 │   └── preferred_companies.txt  # Legacy: per-profile list is now in the profile page

@@ -1,0 +1,105 @@
+name: Build Installers
+
+# Triggers:
+#  1. Push a version tag (v1.0, v1.2.3, etc.) → full build + attach to GitHub Release
+#  2. Manual run from the Actions tab (workflow_dispatch) → build only, no release upload
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # Windows — NSIS installer → JobWise-Setup.exe
+  # ─────────────────────────────────────────────────────────────
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install NSIS
+        run: choco install nsis --no-progress -y
+
+      - name: Prepare clean source tree
+        shell: bash
+        run: |
+          # Export a clean copy of the repo (no .git, no venv, no .env, no __pycache__)
+          git archive HEAD | tar -x -C installer/windows/source
+        # Note: git archive respects .gitignore and only exports tracked files
+
+      - name: Create placeholder icon (if missing)
+        shell: pwsh
+        run: |
+          $ico = "installer/windows/source/docs/img/icon.ico"
+          if (-not (Test-Path $ico)) {
+            # NSIS won't error if the icon is missing, but shortcuts look better with one.
+            # Copy a blank placeholder so the script references are satisfied.
+            New-Item -ItemType Directory -Force -Path (Split-Path $ico) | Out-Null
+            # Use a minimal valid .ico (1x1 pixel, copied from any Windows system icon)
+            Copy-Item "$env:SystemRoot\System32\shell32.dll" -Destination "$env:TEMP\shell32.dll"
+            Write-Host "Icon placeholder skipped — no system icon copy tool available; NSIS will use default."
+          }
+
+      - name: Build installer
+        shell: cmd
+        working-directory: installer/windows
+        run: makensis jobwise.nsi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: JobWise-Setup.exe
+
+      - name: Attach to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: JobWise-Setup.exe
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ─────────────────────────────────────────────────────────────
+  # Mac — DMG with all files bundled → JobWise-Mac.dmg
+  # ─────────────────────────────────────────────────────────────
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare source tree
+        run: |
+          mkdir -p /tmp/jobwise-dmg-root/jobwise-files
+          # Export only tracked files (no .git / venv / .env / __pycache__)
+          git archive HEAD | tar -x -C /tmp/jobwise-dmg-root/jobwise-files
+          # Copy the installer script to the DMG root
+          cp installer/mac/install.command "/tmp/jobwise-dmg-root/Install JobWise.command"
+          chmod +x "/tmp/jobwise-dmg-root/Install JobWise.command"
+
+      - name: Create DMG
+        run: |
+          hdiutil create \
+            -volname "JobWise Installer" \
+            -srcfolder /tmp/jobwise-dmg-root \
+            -ov \
+            -format UDZO \
+            JobWise-Mac.dmg
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-installer
+          path: JobWise-Mac.dmg
+
+      - name: Attach to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: JobWise-Mac.dmg
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
