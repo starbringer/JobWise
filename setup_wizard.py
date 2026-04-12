@@ -321,17 +321,43 @@ def step3_ai_provider():
     provider = ask_menu(
         "Which AI provider do you want to use?",
         [
-            ("gemini",    "Google Gemini  — free tier available, recommended for most users"),
-            ("openai",    "OpenAI GPT-4o  — paid, requires a credit card"),
-            ("anthropic", "Anthropic Claude  — paid, requires a credit card"),
-            ("ollama",    "Ollama  — completely free, runs on your computer (no internet needed)"),
+            ("claude_cli", "claude.ai  — free with a claude.ai Pro or Max subscription, no API key needed"),
+            ("gemini",     "Google Gemini  — free tier available, recommended for most users"),
+            ("openai",     "OpenAI GPT-4o  — paid, requires a credit card"),
+            ("anthropic",  "Anthropic Claude API  — paid, requires a credit card"),
+            ("ollama",     "Ollama  — completely free, runs on your computer (no internet needed)"),
         ],
         default_key="gemini",
     )
 
     env_keys = {}
 
-    if provider == "gemini":
+    if provider == "claude_cli":
+        blank()
+        print(c(BOLD, "   Using claude.ai — no API key needed!"))
+        blank()
+        print("   You'll need Claude Code installed and signed in.")
+        print("   Here's how to set it up:")
+        blank()
+        print(c(BOLD, "   Step 1 — Install Claude Code:"))
+        print("     Go to:  https://claude.ai/code")
+        print("     Download and install it for your platform (Windows or Mac).")
+        blank()
+        print(c(BOLD, "   Step 2 — Sign in:"))
+        print("     Open a terminal (Command Prompt on Windows, Terminal on Mac) and run:")
+        print(c(CYAN, "       claude login"))
+        print("     A browser window will open — sign in with your claude.ai account.")
+        print("     You only need to do this once.")
+        blank()
+        print(c(BOLD, "   Step 3 — Verify it works:"))
+        print("     In the same terminal, run:")
+        print(c(CYAN, '       claude -p "Say hello"'))
+        print("     If you see a response, you're all set.")
+        blank()
+        input("   Press Enter once you've completed the steps above (or to skip for now): ")
+        ok("claude.ai selected — no API key needed.")
+
+    elif provider == "gemini":
         blank()
         print(c(BOLD, "   How to get a FREE Gemini API key (takes ~2 minutes):"))
         print("     1. Go to:  https://aistudio.google.com")

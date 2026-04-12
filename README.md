@@ -40,7 +40,7 @@ This opens a terminal window running the app. **To stop JobWise**, switch to tha
 - **Multi-source fetching** — Greenhouse, Lever, JSearch, and JobSpy (LinkedIn/Indeed)
 - **AI scoring** — each job scored from both a hiring-manager and candidate perspective
 - **Hard-requirement filtering** — titles, companies, remote type, salary, country, clearance, and industry filters applied before any AI tokens are spent
-- **Any AI provider** — Gemini, OpenAI, Anthropic, or local Ollama; no lock-in
+- **Any AI provider** — claude.ai (free with your subscription, no API key), Gemini, OpenAI, Anthropic, or local Ollama; no lock-in
 - **Multiple profiles** — manage separate job searches side by side (e.g. different roles, markets, or seniority levels), each with independent scoring and history
 - **Application tracking** — move jobs through a full pipeline (applied → phone screen → interviews → offer/rejected) and save bookmarks; saved and active-stage jobs are never auto-removed
 - **Incremental runs** — only new jobs are fetched and scored on repeat runs
@@ -88,7 +88,15 @@ No pressure at all — the software is and always will be free. But if you land 
 
 - **Python 3.11+** — [download here](https://python.org)
 - **A free RapidAPI account** — for the JSearch job source
-- **An AI provider API key** — [Gemini](https://aistudio.google.com) (free tier available, recommended), [OpenAI](https://platform.openai.com), or [Anthropic](https://console.anthropic.com); **or** run fully locally with [Ollama](https://ollama.com) (no key, no cost)
+- **An AI provider** — pick the one that fits you:
+
+  | Option | Cost | What you need |
+  |--------|------|---------------|
+  | **claude.ai** | Free (included in claude.ai subscription) | A [claude.ai](https://claude.ai) Pro or Max subscription + Claude Code installed — [see setup below](#using-claudeai-as-your-ai-provider) |
+  | **Google Gemini** | Free tier available | A free API key from [aistudio.google.com](https://aistudio.google.com) |
+  | **OpenAI** | Paid | A paid API key from [platform.openai.com](https://platform.openai.com) |
+  | **Anthropic** | Paid | A paid API key from [console.anthropic.com](https://console.anthropic.com) |
+  | **Ollama** | Free (runs on your computer) | [ollama.com](https://ollama.com) — no account, no key, no internet |
 
 ---
 
@@ -145,20 +153,27 @@ pip install -r requirements.txt
 
 **AI provider — pick one:**
 
-| Provider | Cost | Sign up |
-|----------|------|---------|
-| Google Gemini | Free tier available | [aistudio.google.com](https://aistudio.google.com) |
-| OpenAI | Paid | [platform.openai.com](https://platform.openai.com) |
-| Anthropic | Paid | [console.anthropic.com](https://console.anthropic.com) |
-| Ollama | Free, runs locally | [ollama.com](https://ollama.com) |
+| Provider | Cost | Notes |
+|----------|------|-------|
+| claude.ai | Free with claude.ai Pro/Max subscription | No API key — see [setup below](#using-claudeai-as-your-ai-provider) |
+| Google Gemini | Free tier available | Get a key at [aistudio.google.com](https://aistudio.google.com) |
+| OpenAI | Paid | Get a key at [platform.openai.com](https://platform.openai.com) |
+| Anthropic | Paid | Get a key at [console.anthropic.com](https://console.anthropic.com) |
+| Ollama | Free, runs locally | No key needed — [ollama.com](https://ollama.com) |
 
 ### Step 5 — Create your `.env` file
 
-Create a file named `.env` in the project root:
+> **Claude Code CLI users:** skip the AI key below — no API key is needed. Only add `JSEARCH_API_KEY`.
+
+Create a file named `.env` in the project root. Add the keys that apply to your setup:
 
 ```
 JSEARCH_API_KEY=your_rapidapi_key_here
+
+# Add only the one that matches your chosen AI provider:
 GEMINI_API_KEY=your_gemini_key_here
+OPENAI_API_KEY=your_openai_key_here
+ANTHROPIC_API_KEY=your_anthropic_key_here
 ```
 
 ### Step 6 — Configure the app
@@ -202,6 +217,40 @@ bash scheduler/install-cron.sh
 </details>
 
 That's it! For help managing saved jobs, tracking your applications, and getting the most out of the web UI, see the **[User Guide →](docs/user-guide.md)**
+
+---
+
+## Using claude.ai as your AI provider
+
+If you have a **claude.ai Pro or Max subscription**, you can use it directly — no extra API key or billing needed. JobWise uses Claude Code (included with your subscription) to score jobs.
+
+**JobWise does not log you in.** You need to install Claude Code and sign in once — then JobWise will use it automatically.
+
+### Step 1 — Install Claude Code
+
+Go to **[claude.ai/code](https://claude.ai/code)** and follow the download instructions for your platform (Windows or Mac).
+
+### Step 2 — Sign in
+
+After installing, open a terminal (Command Prompt on Windows, Terminal on Mac) and run:
+```
+claude login
+```
+A browser window will open — sign in with your claude.ai account. You only need to do this once.
+
+### Step 3 — Verify it works
+
+In the same terminal, run:
+```
+claude -p "Say hello"
+```
+If you see a response, you're all set.
+
+### Step 4 — Select it in the setup wizard
+
+When the setup wizard asks which AI provider to use, choose **claude.ai**. The wizard will prompt you to complete the steps above and then configure JobWise automatically.
+
+If you've already finished setup and want to switch to claude.ai later, open the **Settings** tab in the JobWise web UI and change **AI Provider** to `claude_cli`.
 
 ---
 

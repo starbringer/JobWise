@@ -186,7 +186,8 @@ def _call_claude_cli(prompt: str, expect_json: bool = True, system: str | None =
         if result.returncode != 0:
             raise RuntimeError(
                 f"Claude CLI returned exit code {result.returncode}.\n"
-                f"stderr: {result.stderr.strip()}"
+                f"stdout: {result.stdout.strip()[:500]}\n"
+                f"stderr: {result.stderr.strip()[:500]}"
             )
 
     output = result.stdout.strip()

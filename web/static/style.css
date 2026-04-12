@@ -162,27 +162,8 @@ body {
     radial-gradient(ellipse 40% 35% at 55% 5%,  rgba(200,60,70,0.25) 0%, transparent 60%),
     radial-gradient(ellipse 35% 30% at 75% 20%, rgba(60,200,220,0.15) 0%, transparent 55%);
 }
-/* Ocean theme — deep sea gradient */
-[data-theme="ocean"] body {
-  background-image:
-    radial-gradient(ellipse 65% 55% at 12% 28%, rgba(10,80,160,0.65) 0%, transparent 70%),
-    radial-gradient(ellipse 55% 50% at 88% 70%, rgba(5,60,130,0.55) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 35% at 55% 5%,  rgba(32,216,200,0.20) 0%, transparent 60%);
-}
-/* Sunset theme — ember gradient */
-[data-theme="sunset"] body {
-  background-image:
-    radial-gradient(ellipse 65% 55% at 15% 30%, rgba(200,70,20,0.65) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 45% at 85% 70%, rgba(180,50,10,0.55) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 35% at 55% 5%,  rgba(240,160,32,0.25) 0%, transparent 60%);
-}
-/* Midnight theme — amber gradient */
-[data-theme="midnight"] body {
-  background-image:
-    radial-gradient(ellipse 70% 55% at 20% 35%, rgba(160,100,20,0.60) 0%, transparent 65%),
-    radial-gradient(ellipse 55% 45% at 80% 75%, rgba(120,70,15,0.50) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 35% at 55% 5%,  rgba(96,208,144,0.18) 0%, transparent 55%);
-}
+
+
 @media (prefers-color-scheme: dark) {
   html:not([data-theme]) body {
     background-image:
@@ -202,6 +183,94 @@ body {
   background-image:
     radial-gradient(ellipse 60% 50% at 20% 30%, rgba(0,40,25,0.55) 0%, transparent 65%),
     radial-gradient(ellipse 45% 40% at 80% 75%, rgba(0,30,20,0.40) 0%, transparent 60%);
+}
+/* Sky theme — soft blue gradient wash */
+[data-theme="sky"] {
+  --bg:            #EEF5FD;
+  --surface:       #FFFFFF;
+  --surface-2:     #E2EDF8;
+  --surface-3:     #D3E4F4;
+  --border:        #BAD0E8;
+  --border-light:  #D8E9F5;
+  --text:          #192C40;
+  --text-muted:    #446080;
+  --text-subtle:   #7898B8;
+  --primary:       #1F6EC8;
+  --primary-hover: #1558A8;
+  --primary-light: #D8EBF8;
+  --accent:        #1F6EC8;
+  --accent-light:  #D8EBF8;
+  --teal:          #1898B0;
+  --teal-light:    #D0EEF5;
+  --rose:          #C04070;
+  --rose-light:    #F5DCE8;
+  --orange:        #C07830;
+  --orange-light:  #F8ECD8;
+  --success:       #2A8048;
+  --success-light: #D8F0E2;
+  --warning:       #8A6010;
+  --warning-light: #FAF0D0;
+  --danger:        #B02830;
+  --danger-light:  #F8DDE0;
+  --info:          #1878A0;
+  --info-light:    #D0E8F5;
+  --sky:           #1898C0;
+  --sky-light:     #CCECF8;
+  --shadow-xs: 0 1px 3px rgba(25,50,80,.07);
+  --shadow-sm: 0 2px 8px rgba(25,50,80,.09), 0 1px 3px rgba(25,50,80,.05);
+  --shadow:    0 6px 20px rgba(25,50,80,.10), 0 2px 6px rgba(25,50,80,.05);
+  --shadow-lg: 0 16px 40px rgba(25,50,80,.12), 0 4px 10px rgba(25,50,80,.06);
+  --btn-fg:    #fff;
+}
+[data-theme="sky"] body {
+  background-image:
+    radial-gradient(ellipse 65% 55% at 10% 25%, rgba(100,170,240,0.22) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 50% at 88% 70%, rgba(60,140,220,0.16) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 35% at 55% 5%,  rgba(180,220,255,0.18) 0%, transparent 55%);
+}
+/* Sand theme — warm parchment gradient wash */
+[data-theme="sand"] {
+  --bg:            #FAF4E8;
+  --surface:       #FFFEF8;
+  --surface-2:     #F4E9D2;
+  --surface-3:     #ECDFC0;
+  --border:        #D8C898;
+  --border-light:  #EAE0C0;
+  --text:          #2C1E08;
+  --text-muted:    #6A5030;
+  --text-subtle:   #9A7848;
+  --primary:       #9A4820;
+  --primary-hover: #782E08;
+  --primary-light: #F5E0D4;
+  --accent:        #9A4820;
+  --accent-light:  #F5E0D4;
+  --teal:          #307060;
+  --teal-light:    #D5EDE7;
+  --rose:          #A03058;
+  --rose-light:    #F5DAEA;
+  --orange:        #C06020;
+  --orange-light:  #F8E8D5;
+  --success:       #3A7028;
+  --success-light: #DCF0D8;
+  --warning:       #8A6010;
+  --warning-light: #FAF0D0;
+  --danger:        #982020;
+  --danger-light:  #F8DADA;
+  --info:          #2A5078;
+  --info-light:    #D5E8F5;
+  --sky:           #3870A0;
+  --sky-light:     #D0E5F5;
+  --shadow-xs: 0 1px 3px rgba(44,30,8,.07);
+  --shadow-sm: 0 2px 8px rgba(44,30,8,.09), 0 1px 3px rgba(44,30,8,.05);
+  --shadow:    0 6px 20px rgba(44,30,8,.10), 0 2px 6px rgba(44,30,8,.05);
+  --shadow-lg: 0 16px 40px rgba(44,30,8,.12), 0 4px 10px rgba(44,30,8,.06);
+  --btn-fg:    #fff;
+}
+[data-theme="sand"] body {
+  background-image:
+    radial-gradient(ellipse 65% 55% at 10% 25%, rgba(200,160,90,0.20) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 45% at 88% 70%, rgba(180,130,70,0.16) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 35% at 55% 5%,  rgba(230,200,140,0.18) 0%, transparent 55%);
 }
 a { color: inherit; text-decoration: none; }
 button, input, textarea, select { font-family: inherit; }
@@ -2331,7 +2400,7 @@ a.db-page-btn:hover { border-color: var(--primary); color: var(--primary); backg
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   🎨 BOLD PANEL COLORS — Dark mode (auto + midnight theme)
+   🎨 BOLD PANEL COLORS — Dark mode (auto)
    Actual palette colors used as visible panel/card backgrounds.
    Pine Green #3B6B4A · Mustard Yellow #D9A54A · Terracotta #C78B73
    Cool Gray #AFAFAF · Linen #E7D2B5 · Soft White #F4F4F4
@@ -2429,95 +2498,6 @@ a.db-page-btn:hover { border-color: var(--primary); color: var(--primary); backg
   html:not([data-theme]) .btn-toggle-desc:hover { color: #1C2018; }
 }
 
-/* ── Midnight theme (amber glassmorphic) ──────────────────────── */
-html[data-theme="midnight"] .navbar { border-bottom-color: rgba(255,255,255,0.10); }
-html[data-theme="midnight"] .profile-card { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.12); }
-html[data-theme="midnight"] .profile-stats { border-top-color: rgba(255,255,255,0.10); }
-html[data-theme="midnight"] .filter-bar { background: rgba(240,184,64,0.10); border-color: rgba(240,184,64,0.25); border-left: 4px solid #F0B840; border-radius: var(--radius); }
-html[data-theme="midnight"] .job-card { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.12); border-left-color: rgba(255,255,255,0.12); box-shadow: 0 4px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12); }
-html[data-theme="midnight"] .job-card[data-status="new"]          { border-left-color: #F0B840; }
-html[data-theme="midnight"] .job-card[data-status="saved"]        { border-left-color: #80C8F0; }
-html[data-theme="midnight"] .job-card[data-status="applied"]      { border-left-color: #70B8E8; }
-html[data-theme="midnight"] .job-card[data-status="phone_screen"] { border-left-color: #60D090; }
-html[data-theme="midnight"] .job-card[data-status="interview_1"],
-html[data-theme="midnight"] .job-card[data-status="interview_2"],
-html[data-theme="midnight"] .job-card[data-status="interview_3"]  { border-left-color: #F08870; }
-html[data-theme="midnight"] .job-card[data-status="offer"]        { border-left-color: #60D090; }
-html[data-theme="midnight"] .job-card[data-status="rejected"],
-html[data-theme="midnight"] .job-card[data-status="missing_info"] { border-left-color: #F06060; }
-html[data-theme="midnight"] .job-card[data-status="withdrawn"]    { border-left-color: rgba(255,255,255,0.30); }
-html[data-theme="midnight"] .job-card-actions { background: rgba(0,0,0,0.20); border-top-color: rgba(255,255,255,0.07); }
-html[data-theme="midnight"] .score-pill-mgr { background: rgba(240,184,64,0.20); color: #F0B840; border: 1px solid rgba(240,184,64,0.50); }
-html[data-theme="midnight"] .score-pill-you { background: rgba(240,136,112,0.18); color: #F08870; border: 1px solid rgba(240,136,112,0.45); }
-html[data-theme="midnight"] .ai-note-mgr { background: rgba(240,184,64,0.18); border-left: 4px solid rgba(240,184,64,0.70); border-radius: var(--radius-sm); }
-html[data-theme="midnight"] .ai-note-mgr .ai-note-label { color: #F0C060; }
-html[data-theme="midnight"] .ai-note-mgr .ai-note-bullets { color: #C8A858; }
-html[data-theme="midnight"] .ai-note-you { background: rgba(240,136,112,0.15); border-left: 4px solid rgba(240,136,112,0.65); border-radius: var(--radius-sm); }
-html[data-theme="midnight"] .ai-note-you .ai-note-label { color: #F0A080; }
-html[data-theme="midnight"] .ai-note-you .ai-note-bullets { color: #C88870; }
-html[data-theme="midnight"] .match-card:not(.candidate-card) { background: rgba(240,184,64,0.12); border: 1px solid rgba(240,184,64,0.35); border-left: 5px solid #F0B840; }
-html[data-theme="midnight"] .match-card:not(.candidate-card) h3 { color: #F0B840; }
-html[data-theme="midnight"] .match-card:not(.candidate-card) .ai-note-bullets { color: #D0C0A0; }
-html[data-theme="midnight"] .candidate-card { background: rgba(240,136,112,0.10); border: 1px solid rgba(240,136,112,0.30); border-left: 5px solid #F08870; }
-html[data-theme="midnight"] .candidate-card h3 { color: #F08870; }
-html[data-theme="midnight"] .candidate-card .ai-note-bullets { color: #C8A090; }
-html[data-theme="midnight"] .description-section { background: rgba(112,184,232,0.08); border-color: rgba(112,184,232,0.20); }
-html[data-theme="midnight"] .description-section h3 { color: #70B8E8; }
-html[data-theme="midnight"] .pairs-match { background: rgba(96,208,144,0.12); border-left: 4px solid #60D090; }
-html[data-theme="midnight"] .pairs-match .pairs-icon { color: #60D090; }
-html[data-theme="midnight"] .pairs-gap { background: rgba(240,96,96,0.12); border-left: 4px solid #F06060; }
-html[data-theme="midnight"] .pairs-gap .pairs-icon { color: #F06060; }
-html[data-theme="midnight"] .sidebar-card.sidebar-actions { background: rgba(240,184,64,0.10); border: 1px solid rgba(240,184,64,0.30); border-left: 4px solid #F0B840; }
-html[data-theme="midnight"] .sidebar-card.sidebar-actions > h3 { color: #F0B840; }
-html[data-theme="midnight"] .sidebar-card.sidebar-status { background: rgba(96,208,144,0.08); border: 1px solid rgba(96,208,144,0.20); border-left: 4px solid #60D090; }
-html[data-theme="midnight"] .sidebar-card.sidebar-status > h3 { color: #60D090; }
-html[data-theme="midnight"] .sidebar-card.sidebar-notes { background: rgba(240,136,112,0.08); border: 1px solid rgba(240,136,112,0.22); border-left: 4px solid #F08870; }
-html[data-theme="midnight"] .sidebar-card.sidebar-notes > h3 { color: #F08870; }
-html[data-theme="midnight"] .sidebar-card.sidebar-meta { background: rgba(112,184,232,0.07); border: 1px solid rgba(112,184,232,0.18); border-left: 4px solid #70B8E8; }
-html[data-theme="midnight"] .sidebar-card.sidebar-meta > h3 { color: #70B8E8; }
-html[data-theme="midnight"] .job-detail-header { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.10); }
-html[data-theme="midnight"] .job-detail-header::before { height: 4px; background: #F0B840; }
-html[data-theme="midnight"] .status-new          { background: rgba(240,184,64,0.28);  color: #F5C848; }
-html[data-theme="midnight"] .status-saved        { background: rgba(128,200,240,0.25); color: #90D0F8; }
-html[data-theme="midnight"] .status-applied      { background: rgba(112,184,232,0.25); color: #80C8F0; }
-html[data-theme="midnight"] .status-phone_screen { background: rgba(96,208,144,0.25);  color: #70E0A0; }
-html[data-theme="midnight"] .status-interview_1,
-html[data-theme="midnight"] .status-interview_2,
-html[data-theme="midnight"] .status-interview_3  { background: rgba(240,136,112,0.28); color: #F8A080; }
-html[data-theme="midnight"] .status-offer        { background: rgba(96,208,144,0.28);  color: #70E0A0; }
-html[data-theme="midnight"] .status-rejected     { background: rgba(240,96,96,0.26);   color: #F87878; }
-html[data-theme="midnight"] .status-withdrawn    { background: rgba(255,255,255,0.12);  color: #A0A0A0; }
-html[data-theme="midnight"] .status-missing_info { background: rgba(255,255,255,0.10);  color: #909090; }
-html[data-theme="midnight"] .remote-remote  { background: rgba(96,208,144,0.22);  color: #70E0A0; }
-html[data-theme="midnight"] .remote-hybrid  { background: rgba(112,184,232,0.20);  color: #80C8F0; }
-html[data-theme="midnight"] .remote-on-site { background: rgba(240,184,64,0.20);  color: #F5C848; }
-html[data-theme="midnight"] .tag           { background: rgba(240,184,64,0.14); color: #F0B840; }
-html[data-theme="midnight"] .tag-soft      { background: rgba(240,184,64,0.14); color: #F0B840; }
-html[data-theme="midnight"] .tag-skill     { background: rgba(112,184,232,0.12); color: #70B8E8; }
-html[data-theme="midnight"] .tag-location  { background: rgba(96,208,144,0.12);  color: #60D090; }
-html[data-theme="midnight"] .tag-exclusion { background: rgba(240,96,96,0.12);   color: #F06060; }
-html[data-theme="midnight"] .tag-company   { background: rgba(240,136,112,0.12); color: #F08870; }
-html[data-theme="midnight"] .tag-nice      { background: rgba(96,208,144,0.12);  color: #60D090; }
-html[data-theme="midnight"] .tag-custom    { background: rgba(96,208,144,0.12);  color: #60D090; }
-html[data-theme="midnight"] .tag-ai        { background: rgba(240,184,64,0.14); color: #F0B840; }
-html[data-theme="midnight"] .profile-detail .profile-section { padding-left: .9rem; border-left: 3px solid transparent; margin-left: -.9rem; }
-html[data-theme="midnight"] .profile-section:nth-child(1)  { border-left-color: #F0B840; }
-html[data-theme="midnight"] .profile-section:nth-child(2)  { border-left-color: #80C8F0; }
-html[data-theme="midnight"] .profile-section:nth-child(3)  { border-left-color: #70B8E8; }
-html[data-theme="midnight"] .profile-section:nth-child(4)  { border-left-color: #60D090; }
-html[data-theme="midnight"] .profile-section:nth-child(5)  { border-left-color: #F08870; }
-html[data-theme="midnight"] .profile-section:nth-child(6)  { border-left-color: #60D090; }
-html[data-theme="midnight"] .profile-section:nth-child(7)  { border-left-color: #F06060; }
-html[data-theme="midnight"] .profile-section:nth-child(8)  { border-left-color: #F0B840; }
-html[data-theme="midnight"] .profile-section:nth-child(9)  { border-left-color: #80C8F0; }
-html[data-theme="midnight"] .profile-section:nth-child(10) { border-left-color: #70B8E8; }
-html[data-theme="midnight"] .stat-ochre .stat-num { color: #F0B840; }
-html[data-theme="midnight"] .stat-blue  .stat-num { color: #70B8E8; }
-html[data-theme="midnight"] .stat-plum  .stat-num { color: #F08870; }
-html[data-theme="midnight"] .stat-green .stat-num { color: #60D090; }
-html[data-theme="midnight"] .tab.active .tab-count { background: rgba(255,255,255,0.12); }
-html[data-theme="midnight"] .btn-toggle-desc:hover { color: #060B07; }
-
 /* ── Fjord theme (birchwood & steel-blue glassmorphic) ────────── */
 html[data-theme="fjord"] .navbar { border-bottom-color: rgba(255,255,255,0.10); }
 html[data-theme="fjord"] .profile-card { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.12); }
@@ -2607,183 +2587,6 @@ html[data-theme="fjord"] .stat-green .stat-num { color: #70D0A0; }
 html[data-theme="fjord"] .tab.active .tab-count { background: rgba(255,255,255,0.12); }
 html[data-theme="fjord"] .btn-toggle-desc:hover { color: #050810; }
 
-/* ── Ocean theme (deep sea glassmorphic) ──────────────────────── */
-html[data-theme="ocean"] .navbar { border-bottom-color: rgba(255,255,255,0.10); }
-html[data-theme="ocean"] .profile-card { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.12); }
-html[data-theme="ocean"] .profile-stats { border-top-color: rgba(255,255,255,0.10); }
-html[data-theme="ocean"] .filter-bar { background: rgba(40,168,240,0.10); border-color: rgba(40,168,240,0.25); border-left: 4px solid #28A8F0; border-radius: var(--radius); }
-html[data-theme="ocean"] .job-card { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.12); border-left-color: rgba(255,255,255,0.12); box-shadow: 0 4px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12); }
-html[data-theme="ocean"] .job-card[data-status="new"]          { border-left-color: #28A8F0; }
-html[data-theme="ocean"] .job-card[data-status="saved"]        { border-left-color: #60C8F8; }
-html[data-theme="ocean"] .job-card[data-status="applied"]      { border-left-color: #20D8C8; }
-html[data-theme="ocean"] .job-card[data-status="phone_screen"] { border-left-color: #20D890; }
-html[data-theme="ocean"] .job-card[data-status="interview_1"],
-html[data-theme="ocean"] .job-card[data-status="interview_2"],
-html[data-theme="ocean"] .job-card[data-status="interview_3"]  { border-left-color: #C060E0; }
-html[data-theme="ocean"] .job-card[data-status="offer"]        { border-left-color: #20D890; }
-html[data-theme="ocean"] .job-card[data-status="rejected"],
-html[data-theme="ocean"] .job-card[data-status="missing_info"] { border-left-color: #F05070; }
-html[data-theme="ocean"] .job-card[data-status="withdrawn"]    { border-left-color: rgba(255,255,255,0.30); }
-html[data-theme="ocean"] .job-card-actions { background: rgba(0,0,0,0.20); border-top-color: rgba(255,255,255,0.07); }
-html[data-theme="ocean"] .score-pill-mgr { background: rgba(40,168,240,0.20); color: #28A8F0; border: 1px solid rgba(40,168,240,0.50); }
-html[data-theme="ocean"] .score-pill-you { background: rgba(32,216,200,0.18); color: #20D8C8; border: 1px solid rgba(32,216,200,0.45); }
-html[data-theme="ocean"] .ai-note-mgr { background: rgba(40,168,240,0.18); border-left: 4px solid rgba(40,168,240,0.70); border-radius: var(--radius-sm); }
-html[data-theme="ocean"] .ai-note-mgr .ai-note-label { color: #60C8F8; }
-html[data-theme="ocean"] .ai-note-mgr .ai-note-bullets { color: #4090C0; }
-html[data-theme="ocean"] .ai-note-you { background: rgba(32,216,200,0.15); border-left: 4px solid rgba(32,216,200,0.65); border-radius: var(--radius-sm); }
-html[data-theme="ocean"] .ai-note-you .ai-note-label { color: #20D8C8; }
-html[data-theme="ocean"] .ai-note-you .ai-note-bullets { color: #30A898; }
-html[data-theme="ocean"] .match-card:not(.candidate-card) { background: rgba(40,168,240,0.12); border: 1px solid rgba(40,168,240,0.35); border-left: 5px solid #28A8F0; }
-html[data-theme="ocean"] .match-card:not(.candidate-card) h3 { color: #28A8F0; }
-html[data-theme="ocean"] .match-card:not(.candidate-card) .ai-note-bullets { color: #A0C8E0; }
-html[data-theme="ocean"] .candidate-card { background: rgba(32,216,200,0.10); border: 1px solid rgba(32,216,200,0.28); border-left: 5px solid #20D8C8; }
-html[data-theme="ocean"] .candidate-card h3 { color: #20D8C8; }
-html[data-theme="ocean"] .candidate-card .ai-note-bullets { color: #60B8B0; }
-html[data-theme="ocean"] .description-section { background: rgba(96,200,248,0.07); border-color: rgba(96,200,248,0.18); }
-html[data-theme="ocean"] .description-section h3 { color: #60C8F8; }
-html[data-theme="ocean"] .pairs-match { background: rgba(32,216,144,0.12); border-left: 4px solid #20D890; }
-html[data-theme="ocean"] .pairs-match .pairs-icon { color: #20D890; }
-html[data-theme="ocean"] .pairs-gap { background: rgba(240,80,112,0.12); border-left: 4px solid #F05070; }
-html[data-theme="ocean"] .pairs-gap .pairs-icon { color: #F05070; }
-html[data-theme="ocean"] .sidebar-card.sidebar-actions { background: rgba(40,168,240,0.10); border: 1px solid rgba(40,168,240,0.28); border-left: 4px solid #28A8F0; }
-html[data-theme="ocean"] .sidebar-card.sidebar-actions > h3 { color: #28A8F0; }
-html[data-theme="ocean"] .sidebar-card.sidebar-status { background: rgba(32,216,144,0.08); border: 1px solid rgba(32,216,144,0.20); border-left: 4px solid #20D890; }
-html[data-theme="ocean"] .sidebar-card.sidebar-status > h3 { color: #20D890; }
-html[data-theme="ocean"] .sidebar-card.sidebar-notes { background: rgba(32,216,200,0.07); border: 1px solid rgba(32,216,200,0.18); border-left: 4px solid #20D8C8; }
-html[data-theme="ocean"] .sidebar-card.sidebar-notes > h3 { color: #20D8C8; }
-html[data-theme="ocean"] .sidebar-card.sidebar-meta { background: rgba(96,200,248,0.07); border: 1px solid rgba(96,200,248,0.18); border-left: 4px solid #60C8F8; }
-html[data-theme="ocean"] .sidebar-card.sidebar-meta > h3 { color: #60C8F8; }
-html[data-theme="ocean"] .job-detail-header { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.10); }
-html[data-theme="ocean"] .job-detail-header::before { height: 4px; background: #28A8F0; }
-html[data-theme="ocean"] .status-new          { background: rgba(40,168,240,0.28);  color: #50C0F8; }
-html[data-theme="ocean"] .status-saved        { background: rgba(96,200,248,0.25);  color: #80D8FF; }
-html[data-theme="ocean"] .status-applied      { background: rgba(32,216,200,0.25);  color: #30E8D8; }
-html[data-theme="ocean"] .status-phone_screen { background: rgba(32,216,144,0.25);  color: #30E8A0; }
-html[data-theme="ocean"] .status-interview_1,
-html[data-theme="ocean"] .status-interview_2,
-html[data-theme="ocean"] .status-interview_3  { background: rgba(192,96,224,0.26);  color: #D070F8; }
-html[data-theme="ocean"] .status-offer        { background: rgba(32,216,144,0.28);  color: #30E8A0; }
-html[data-theme="ocean"] .status-rejected     { background: rgba(240,80,112,0.26);  color: #F87090; }
-html[data-theme="ocean"] .status-withdrawn    { background: rgba(255,255,255,0.12);  color: #A0A0A0; }
-html[data-theme="ocean"] .status-missing_info { background: rgba(255,255,255,0.10);  color: #909090; }
-html[data-theme="ocean"] .remote-remote  { background: rgba(32,216,144,0.22);  color: #30E8A0; }
-html[data-theme="ocean"] .remote-hybrid  { background: rgba(32,216,200,0.20);  color: #30E8D8; }
-html[data-theme="ocean"] .remote-on-site { background: rgba(40,168,240,0.20);  color: #50C0F8; }
-html[data-theme="ocean"] .tag           { background: rgba(40,168,240,0.14); color: #28A8F0; }
-html[data-theme="ocean"] .tag-soft      { background: rgba(40,168,240,0.14); color: #28A8F0; }
-html[data-theme="ocean"] .tag-skill     { background: rgba(96,200,248,0.12);  color: #60C8F8; }
-html[data-theme="ocean"] .tag-location  { background: rgba(32,216,144,0.12);  color: #20D890; }
-html[data-theme="ocean"] .tag-exclusion { background: rgba(240,80,112,0.12);  color: #F05070; }
-html[data-theme="ocean"] .tag-company   { background: rgba(192,96,224,0.12);  color: #C060E0; }
-html[data-theme="ocean"] .tag-nice      { background: rgba(32,216,144,0.12);  color: #20D890; }
-html[data-theme="ocean"] .tag-custom    { background: rgba(32,216,144,0.12);  color: #20D890; }
-html[data-theme="ocean"] .tag-ai        { background: rgba(40,168,240,0.14); color: #28A8F0; }
-html[data-theme="ocean"] .profile-detail .profile-section { padding-left: .9rem; border-left: 3px solid transparent; margin-left: -.9rem; }
-html[data-theme="ocean"] .profile-section:nth-child(1)  { border-left-color: #28A8F0; }
-html[data-theme="ocean"] .profile-section:nth-child(2)  { border-left-color: #60C8F8; }
-html[data-theme="ocean"] .profile-section:nth-child(3)  { border-left-color: #20D8C8; }
-html[data-theme="ocean"] .profile-section:nth-child(4)  { border-left-color: #20D890; }
-html[data-theme="ocean"] .profile-section:nth-child(5)  { border-left-color: #C060E0; }
-html[data-theme="ocean"] .profile-section:nth-child(6)  { border-left-color: #20D890; }
-html[data-theme="ocean"] .profile-section:nth-child(7)  { border-left-color: #F05070; }
-html[data-theme="ocean"] .profile-section:nth-child(8)  { border-left-color: #28A8F0; }
-html[data-theme="ocean"] .profile-section:nth-child(9)  { border-left-color: #60C8F8; }
-html[data-theme="ocean"] .profile-section:nth-child(10) { border-left-color: #20D8C8; }
-html[data-theme="ocean"] .stat-ochre .stat-num { color: #28A8F0; }
-html[data-theme="ocean"] .stat-blue  .stat-num { color: #60C8F8; }
-html[data-theme="ocean"] .stat-plum  .stat-num { color: #C060E0; }
-html[data-theme="ocean"] .stat-green .stat-num { color: #20D890; }
-html[data-theme="ocean"] .tab.active .tab-count { background: rgba(255,255,255,0.12); }
-html[data-theme="ocean"] .btn-toggle-desc:hover { color: #050C14; }
-
-/* ── Sunset theme (ember glassmorphic) ────────────────────────── */
-html[data-theme="sunset"] .navbar { border-bottom-color: rgba(255,255,255,0.10); }
-html[data-theme="sunset"] .profile-card { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.12); }
-html[data-theme="sunset"] .profile-stats { border-top-color: rgba(255,255,255,0.10); }
-html[data-theme="sunset"] .filter-bar { background: rgba(240,96,32,0.10); border-color: rgba(240,96,32,0.25); border-left: 4px solid #F06020; border-radius: var(--radius); }
-html[data-theme="sunset"] .job-card { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.12); border-left-color: rgba(255,255,255,0.12); box-shadow: 0 4px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12); }
-html[data-theme="sunset"] .job-card[data-status="new"]          { border-left-color: #F06020; }
-html[data-theme="sunset"] .job-card[data-status="saved"]        { border-left-color: #F0B060; }
-html[data-theme="sunset"] .job-card[data-status="applied"]      { border-left-color: #F09040; }
-html[data-theme="sunset"] .job-card[data-status="phone_screen"] { border-left-color: #80D060; }
-html[data-theme="sunset"] .job-card[data-status="interview_1"],
-html[data-theme="sunset"] .job-card[data-status="interview_2"],
-html[data-theme="sunset"] .job-card[data-status="interview_3"]  { border-left-color: #E04060; }
-html[data-theme="sunset"] .job-card[data-status="offer"]        { border-left-color: #80D060; }
-html[data-theme="sunset"] .job-card[data-status="rejected"],
-html[data-theme="sunset"] .job-card[data-status="missing_info"] { border-left-color: #F03040; }
-html[data-theme="sunset"] .job-card[data-status="withdrawn"]    { border-left-color: rgba(255,255,255,0.30); }
-html[data-theme="sunset"] .job-card-actions { background: rgba(0,0,0,0.20); border-top-color: rgba(255,255,255,0.07); }
-html[data-theme="sunset"] .score-pill-mgr { background: rgba(240,96,32,0.20); color: #F06020; border: 1px solid rgba(240,96,32,0.50); }
-html[data-theme="sunset"] .score-pill-you { background: rgba(240,160,32,0.18); color: #F0A020; border: 1px solid rgba(240,160,32,0.45); }
-html[data-theme="sunset"] .ai-note-mgr { background: rgba(240,96,32,0.18); border-left: 4px solid rgba(240,96,32,0.70); border-radius: var(--radius-sm); }
-html[data-theme="sunset"] .ai-note-mgr .ai-note-label { color: #F87040; }
-html[data-theme="sunset"] .ai-note-mgr .ai-note-bullets { color: #C05828; }
-html[data-theme="sunset"] .ai-note-you { background: rgba(240,160,32,0.15); border-left: 4px solid rgba(240,160,32,0.65); border-radius: var(--radius-sm); }
-html[data-theme="sunset"] .ai-note-you .ai-note-label { color: #F0A020; }
-html[data-theme="sunset"] .ai-note-you .ai-note-bullets { color: #B07818; }
-html[data-theme="sunset"] .match-card:not(.candidate-card) { background: rgba(240,96,32,0.12); border: 1px solid rgba(240,96,32,0.35); border-left: 5px solid #F06020; }
-html[data-theme="sunset"] .match-card:not(.candidate-card) h3 { color: #F06020; }
-html[data-theme="sunset"] .match-card:not(.candidate-card) .ai-note-bullets { color: #D0B090; }
-html[data-theme="sunset"] .candidate-card { background: rgba(240,160,32,0.10); border: 1px solid rgba(240,160,32,0.28); border-left: 5px solid #F0A020; }
-html[data-theme="sunset"] .candidate-card h3 { color: #F0A020; }
-html[data-theme="sunset"] .candidate-card .ai-note-bullets { color: #C09060; }
-html[data-theme="sunset"] .description-section { background: rgba(240,144,64,0.07); border-color: rgba(240,144,64,0.18); }
-html[data-theme="sunset"] .description-section h3 { color: #F09040; }
-html[data-theme="sunset"] .pairs-match { background: rgba(128,208,96,0.12); border-left: 4px solid #80D060; }
-html[data-theme="sunset"] .pairs-match .pairs-icon { color: #80D060; }
-html[data-theme="sunset"] .pairs-gap { background: rgba(240,48,64,0.12); border-left: 4px solid #F03040; }
-html[data-theme="sunset"] .pairs-gap .pairs-icon { color: #F03040; }
-html[data-theme="sunset"] .sidebar-card.sidebar-actions { background: rgba(240,96,32,0.10); border: 1px solid rgba(240,96,32,0.28); border-left: 4px solid #F06020; }
-html[data-theme="sunset"] .sidebar-card.sidebar-actions > h3 { color: #F06020; }
-html[data-theme="sunset"] .sidebar-card.sidebar-status { background: rgba(128,208,96,0.08); border: 1px solid rgba(128,208,96,0.20); border-left: 4px solid #80D060; }
-html[data-theme="sunset"] .sidebar-card.sidebar-status > h3 { color: #80D060; }
-html[data-theme="sunset"] .sidebar-card.sidebar-notes { background: rgba(240,160,32,0.08); border: 1px solid rgba(240,160,32,0.20); border-left: 4px solid #F0A020; }
-html[data-theme="sunset"] .sidebar-card.sidebar-notes > h3 { color: #F0A020; }
-html[data-theme="sunset"] .sidebar-card.sidebar-meta { background: rgba(240,176,96,0.07); border: 1px solid rgba(240,176,96,0.18); border-left: 4px solid #F0B060; }
-html[data-theme="sunset"] .sidebar-card.sidebar-meta > h3 { color: #F0B060; }
-html[data-theme="sunset"] .job-detail-header { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.10); }
-html[data-theme="sunset"] .job-detail-header::before { height: 4px; background: #F06020; }
-html[data-theme="sunset"] .status-new          { background: rgba(240,96,32,0.28);  color: #F87840; }
-html[data-theme="sunset"] .status-saved        { background: rgba(240,176,96,0.25); color: #F8C060; }
-html[data-theme="sunset"] .status-applied      { background: rgba(240,144,64,0.25); color: #F8A050; }
-html[data-theme="sunset"] .status-phone_screen { background: rgba(128,208,96,0.25); color: #90E060; }
-html[data-theme="sunset"] .status-interview_1,
-html[data-theme="sunset"] .status-interview_2,
-html[data-theme="sunset"] .status-interview_3  { background: rgba(224,64,96,0.26);  color: #F05070; }
-html[data-theme="sunset"] .status-offer        { background: rgba(128,208,96,0.28); color: #90E060; }
-html[data-theme="sunset"] .status-rejected     { background: rgba(240,48,64,0.26);  color: #F85060; }
-html[data-theme="sunset"] .status-withdrawn    { background: rgba(255,255,255,0.12); color: #A0A0A0; }
-html[data-theme="sunset"] .status-missing_info { background: rgba(255,255,255,0.10); color: #909090; }
-html[data-theme="sunset"] .remote-remote  { background: rgba(128,208,96,0.22);  color: #90E060; }
-html[data-theme="sunset"] .remote-hybrid  { background: rgba(240,144,64,0.20);  color: #F8A050; }
-html[data-theme="sunset"] .remote-on-site { background: rgba(240,96,32,0.20);   color: #F87840; }
-html[data-theme="sunset"] .tag           { background: rgba(240,96,32,0.14);  color: #F06020; }
-html[data-theme="sunset"] .tag-soft      { background: rgba(240,96,32,0.14);  color: #F06020; }
-html[data-theme="sunset"] .tag-skill     { background: rgba(240,144,64,0.12); color: #F09040; }
-html[data-theme="sunset"] .tag-location  { background: rgba(128,208,96,0.12); color: #80D060; }
-html[data-theme="sunset"] .tag-exclusion { background: rgba(240,48,64,0.12);  color: #F03040; }
-html[data-theme="sunset"] .tag-company   { background: rgba(224,64,96,0.12);  color: #E04060; }
-html[data-theme="sunset"] .tag-nice      { background: rgba(128,208,96,0.12); color: #80D060; }
-html[data-theme="sunset"] .tag-custom    { background: rgba(128,208,96,0.12); color: #80D060; }
-html[data-theme="sunset"] .tag-ai        { background: rgba(240,96,32,0.14);  color: #F06020; }
-html[data-theme="sunset"] .profile-detail .profile-section { padding-left: .9rem; border-left: 3px solid transparent; margin-left: -.9rem; }
-html[data-theme="sunset"] .profile-section:nth-child(1)  { border-left-color: #F06020; }
-html[data-theme="sunset"] .profile-section:nth-child(2)  { border-left-color: #F0B060; }
-html[data-theme="sunset"] .profile-section:nth-child(3)  { border-left-color: #F09040; }
-html[data-theme="sunset"] .profile-section:nth-child(4)  { border-left-color: #80D060; }
-html[data-theme="sunset"] .profile-section:nth-child(5)  { border-left-color: #E04060; }
-html[data-theme="sunset"] .profile-section:nth-child(6)  { border-left-color: #80D060; }
-html[data-theme="sunset"] .profile-section:nth-child(7)  { border-left-color: #F03040; }
-html[data-theme="sunset"] .profile-section:nth-child(8)  { border-left-color: #F06020; }
-html[data-theme="sunset"] .profile-section:nth-child(9)  { border-left-color: #F0B060; }
-html[data-theme="sunset"] .profile-section:nth-child(10) { border-left-color: #F09040; }
-html[data-theme="sunset"] .stat-ochre .stat-num { color: #F06020; }
-html[data-theme="sunset"] .stat-blue  .stat-num { color: #F09040; }
-html[data-theme="sunset"] .stat-plum  .stat-num { color: #E04060; }
-html[data-theme="sunset"] .stat-green .stat-num { color: #80D060; }
-html[data-theme="sunset"] .tab.active .tab-count { background: rgba(255,255,255,0.12); }
-html[data-theme="sunset"] .btn-toggle-desc:hover { color: #100806; }
 
 /* ── Pine component overrides (glassmorphic dark) ─────────────── */
 html[data-theme="pine"] .navbar {
@@ -3091,45 +2894,6 @@ html[data-theme="black"] {
   --btn-fg:        #003320;
 }
 
-/* ── Midnight (dark — amber glassmorphic) ───────────────────── */
-html[data-theme="midnight"] {
-  --bg:            #060B07;
-  --surface:       rgba(255,255,255,0.08);
-  --surface-2:     rgba(255,255,255,0.05);
-  --surface-3:     rgba(255,255,255,0.11);
-  --border:        rgba(255,255,255,0.12);
-  --border-light:  rgba(255,255,255,0.07);
-  --text:          #F0E8D8;
-  --text-muted:    #B8A890;
-  --text-subtle:   #706050;
-  --primary:       #F0B840;
-  --primary-hover: #D8A030;
-  --primary-light: rgba(240,184,64,0.15);
-  --accent:        #F0B840;
-  --accent-light:  rgba(240,184,64,0.15);
-  --teal:          #60D090;
-  --teal-light:    rgba(96,208,144,0.15);
-  --rose:          #F08870;
-  --rose-light:    rgba(240,136,112,0.15);
-  --orange:        #F07840;
-  --orange-light:  rgba(240,120,64,0.15);
-  --success:       #60D090;
-  --success-light: rgba(96,208,144,0.15);
-  --warning:       #F0B840;
-  --warning-light: rgba(240,184,64,0.15);
-  --danger:        #F06060;
-  --danger-light:  rgba(240,96,96,0.15);
-  --info:          #70B8E8;
-  --info-light:    rgba(112,184,232,0.15);
-  --sky:           #80C8F0;
-  --sky-light:     rgba(128,200,240,0.15);
-  --shadow-xs: 0 1px 3px rgba(0,0,0,.8);
-  --shadow-sm: 0 2px 10px rgba(0,0,0,.8), 0 1px 4px rgba(0,0,0,.6);
-  --shadow:    0 4px 28px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.6);
-  --shadow-lg: 0 16px 48px rgba(0,0,0,.95), 0 6px 14px rgba(0,0,0,.7);
-  --btn-fg:        #1C1206;
-}
-
 /* ── Fjord (dark — birchwood & steel-blue glassmorphic) ─────── */
 html[data-theme="fjord"] {
   --bg:            #050810;
@@ -3166,83 +2930,6 @@ html[data-theme="fjord"] {
   --shadow-sm: 0 2px 10px rgba(0,0,0,.8), 0 1px 4px rgba(0,0,0,.6);
   --shadow:    0 4px 28px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.6);
   --shadow-lg: 0 16px 48px rgba(0,0,0,.95), 0 6px 14px rgba(0,0,0,.7);
-}
-
-/* ── Ocean (dark — deep sea glassmorphic) ───────────────────── */
-html[data-theme="ocean"] {
-  --bg:            #050C14;
-  --surface:       rgba(255,255,255,0.08);
-  --surface-2:     rgba(255,255,255,0.05);
-  --surface-3:     rgba(255,255,255,0.11);
-  --border:        rgba(255,255,255,0.12);
-  --border-light:  rgba(255,255,255,0.07);
-  --text:          #D8EAF8;
-  --text-muted:    #90B8D8;
-  --text-subtle:   #507090;
-  --primary:       #28A8F0;
-  --primary-hover: #1890D8;
-  --primary-light: rgba(40,168,240,0.15);
-  --accent:        #28A8F0;
-  --accent-light:  rgba(40,168,240,0.15);
-  --teal:          #20D8C8;
-  --teal-light:    rgba(32,216,200,0.15);
-  --rose:          #C060E0;
-  --rose-light:    rgba(192,96,224,0.15);
-  --orange:        #40B8E0;
-  --orange-light:  rgba(64,184,224,0.15);
-  --success:       #20D890;
-  --success-light: rgba(32,216,144,0.15);
-  --warning:       #F0C040;
-  --warning-light: rgba(240,192,64,0.15);
-  --danger:        #F05070;
-  --danger-light:  rgba(240,80,112,0.15);
-  --info:          #28A8F0;
-  --info-light:    rgba(40,168,240,0.15);
-  --sky:           #60C8F8;
-  --sky-light:     rgba(96,200,248,0.15);
-  --shadow-xs: 0 1px 3px rgba(0,0,0,.8);
-  --shadow-sm: 0 2px 10px rgba(0,0,0,.8), 0 1px 4px rgba(0,0,0,.6);
-  --shadow:    0 4px 28px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.6);
-  --shadow-lg: 0 16px 48px rgba(0,0,0,.95), 0 6px 14px rgba(0,0,0,.7);
-}
-
-/* ── Sunset (dark — ember glassmorphic) ─────────────────────── */
-html[data-theme="sunset"] {
-  --bg:            #100806;
-  --surface:       rgba(255,255,255,0.08);
-  --surface-2:     rgba(255,255,255,0.05);
-  --surface-3:     rgba(255,255,255,0.11);
-  --border:        rgba(255,255,255,0.12);
-  --border-light:  rgba(255,255,255,0.07);
-  --text:          #F8E8D0;
-  --text-muted:    #C09070;
-  --text-subtle:   #806040;
-  --primary:       #F06020;
-  --primary-hover: #D84810;
-  --primary-light: rgba(240,96,32,0.15);
-  --accent:        #F06020;
-  --accent-light:  rgba(240,96,32,0.15);
-  --teal:          #F0A020;
-  --teal-light:    rgba(240,160,32,0.15);
-  --rose:          #E04060;
-  --rose-light:    rgba(224,64,96,0.15);
-  --orange:        #F08020;
-  --orange-light:  rgba(240,128,32,0.15);
-  --success:       #80D060;
-  --success-light: rgba(128,208,96,0.15);
-  --warning:       #F0C020;
-  --warning-light: rgba(240,192,32,0.15);
-  --danger:        #F03040;
-  --danger-light:  rgba(240,48,64,0.15);
-  --info:          #F09040;
-  --info-light:    rgba(240,144,64,0.15);
-  --sky:           #F0B060;
-  --sky-light:     rgba(240,176,96,0.15);
-  --shadow-xs: 0 1px 3px rgba(0,0,0,.8);
-  --shadow-sm: 0 2px 10px rgba(0,0,0,.8), 0 1px 4px rgba(0,0,0,.6);
-  --shadow:    0 4px 28px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.6);
-  --shadow-lg: 0 16px 48px rgba(0,0,0,.95), 0 6px 14px rgba(0,0,0,.7);
-  --btn-fg:        #200804;
 }
 
 /* ── Pine (dark — Midnight Pine glassmorphic) ───────────────── */
@@ -3587,3 +3274,181 @@ html[data-theme="pine"] {
 }
 .btn-find-jobs.loading .btn-spinner { display: inline-block; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Sky theme (clean light blue) ────────────────────────────── */
+html[data-theme="sky"] .navbar { border-bottom-color: #BAD0E8; }
+html[data-theme="sky"] .profile-card { background: #fff; border-color: #BAD0E8; }
+html[data-theme="sky"] .profile-stats { border-top-color: #BAD0E8; }
+html[data-theme="sky"] .filter-bar { background: #D8EBF8; border-color: #AACCE8; border-left: 4px solid #1F6EC8; border-radius: var(--radius); }
+html[data-theme="sky"] .job-card { background: #fff; border-color: #BAD0E8; border-left-color: #BAD0E8; box-shadow: 0 2px 10px rgba(25,50,80,.08), inset 0 1px 0 rgba(255,255,255,.9); }
+html[data-theme="sky"] .job-card[data-status="new"]          { border-left-color: #1F6EC8; }
+html[data-theme="sky"] .job-card[data-status="saved"]        { border-left-color: #1898B0; }
+html[data-theme="sky"] .job-card[data-status="applied"]      { border-left-color: #1878A0; }
+html[data-theme="sky"] .job-card[data-status="phone_screen"] { border-left-color: #2A8048; }
+html[data-theme="sky"] .job-card[data-status="interview_1"],
+html[data-theme="sky"] .job-card[data-status="interview_2"],
+html[data-theme="sky"] .job-card[data-status="interview_3"]  { border-left-color: #C07830; }
+html[data-theme="sky"] .job-card[data-status="offer"]        { border-left-color: #2A8048; }
+html[data-theme="sky"] .job-card[data-status="rejected"],
+html[data-theme="sky"] .job-card[data-status="missing_info"] { border-left-color: #B02830; }
+html[data-theme="sky"] .job-card[data-status="withdrawn"]    { border-left-color: #BAD0E8; }
+html[data-theme="sky"] .job-card-actions { background: #EEF5FD; border-top-color: #D3E4F4; }
+html[data-theme="sky"] .score-pill-mgr { background: rgba(31,110,200,.12); color: #1558A8; border: 1px solid rgba(31,110,200,.35); }
+html[data-theme="sky"] .score-pill-you { background: rgba(24,152,176,.12); color: #1070A0; border: 1px solid rgba(24,152,176,.35); }
+html[data-theme="sky"] .ai-note-mgr { background: rgba(31,110,200,.09); border-left: 4px solid rgba(31,110,200,.55); border-radius: var(--radius-sm); }
+html[data-theme="sky"] .ai-note-mgr .ai-note-label { color: #1558A8; }
+html[data-theme="sky"] .ai-note-mgr .ai-note-bullets { color: #446080; }
+html[data-theme="sky"] .ai-note-you { background: rgba(24,152,176,.09); border-left: 4px solid rgba(24,152,176,.55); border-radius: var(--radius-sm); }
+html[data-theme="sky"] .ai-note-you .ai-note-label { color: #1070A0; }
+html[data-theme="sky"] .ai-note-you .ai-note-bullets { color: #446880; }
+html[data-theme="sky"] .match-card:not(.candidate-card) { background: rgba(31,110,200,.07); border: 1px solid rgba(31,110,200,.25); border-left: 5px solid #1F6EC8; }
+html[data-theme="sky"] .match-card:not(.candidate-card) h3 { color: #1558A8; }
+html[data-theme="sky"] .match-card:not(.candidate-card) .ai-note-bullets { color: #446080; }
+html[data-theme="sky"] .candidate-card { background: rgba(24,152,176,.07); border: 1px solid rgba(24,152,176,.22); border-left: 5px solid #1898B0; }
+html[data-theme="sky"] .candidate-card h3 { color: #1070A0; }
+html[data-theme="sky"] .candidate-card .ai-note-bullets { color: #446880; }
+html[data-theme="sky"] .description-section { background: rgba(31,110,200,.05); border-color: rgba(31,110,200,.18); }
+html[data-theme="sky"] .description-section h3 { color: #1558A8; }
+html[data-theme="sky"] .pairs-match { background: rgba(42,128,72,.09); border-left: 4px solid #2A8048; }
+html[data-theme="sky"] .pairs-match .pairs-icon { color: #2A8048; }
+html[data-theme="sky"] .pairs-gap { background: rgba(176,40,48,.09); border-left: 4px solid #B02830; }
+html[data-theme="sky"] .pairs-gap .pairs-icon { color: #B02830; }
+html[data-theme="sky"] .sidebar-card.sidebar-actions { background: rgba(31,110,200,.07); border: 1px solid rgba(31,110,200,.22); border-left: 4px solid #1F6EC8; }
+html[data-theme="sky"] .sidebar-card.sidebar-actions > h3 { color: #1558A8; }
+html[data-theme="sky"] .sidebar-card.sidebar-status { background: rgba(42,128,72,.06); border: 1px solid rgba(42,128,72,.18); border-left: 4px solid #2A8048; }
+html[data-theme="sky"] .sidebar-card.sidebar-status > h3 { color: #2A8048; }
+html[data-theme="sky"] .sidebar-card.sidebar-notes { background: rgba(24,152,176,.06); border: 1px solid rgba(24,152,176,.18); border-left: 4px solid #1898B0; }
+html[data-theme="sky"] .sidebar-card.sidebar-notes > h3 { color: #1070A0; }
+html[data-theme="sky"] .sidebar-card.sidebar-meta { background: rgba(24,120,160,.06); border: 1px solid rgba(24,120,160,.16); border-left: 4px solid #1878A0; }
+html[data-theme="sky"] .sidebar-card.sidebar-meta > h3 { color: #1878A0; }
+html[data-theme="sky"] .job-detail-header { background: #fff; border-color: #BAD0E8; }
+html[data-theme="sky"] .job-detail-header::before { height: 4px; background: #1F6EC8; }
+html[data-theme="sky"] .status-new          { background: rgba(31,110,200,.15);  color: #1558A8; }
+html[data-theme="sky"] .status-saved        { background: rgba(24,152,176,.14);  color: #1070A0; }
+html[data-theme="sky"] .status-applied      { background: rgba(24,120,160,.14);  color: #1878A0; }
+html[data-theme="sky"] .status-phone_screen { background: rgba(42,128,72,.14);   color: #2A8048; }
+html[data-theme="sky"] .status-interview_1,
+html[data-theme="sky"] .status-interview_2,
+html[data-theme="sky"] .status-interview_3  { background: rgba(192,120,48,.14);  color: #9A6010; }
+html[data-theme="sky"] .status-offer        { background: rgba(42,128,72,.16);   color: #2A8048; }
+html[data-theme="sky"] .status-rejected     { background: rgba(176,40,48,.14);   color: #B02830; }
+html[data-theme="sky"] .status-withdrawn    { background: rgba(100,130,160,.10); color: #5A7A98; }
+html[data-theme="sky"] .status-missing_info { background: rgba(100,130,160,.08); color: #5A7A98; }
+html[data-theme="sky"] .remote-remote  { background: rgba(42,128,72,.12);  color: #2A8048; }
+html[data-theme="sky"] .remote-hybrid  { background: rgba(24,152,176,.12); color: #1070A0; }
+html[data-theme="sky"] .remote-on-site { background: rgba(31,110,200,.12); color: #1558A8; }
+html[data-theme="sky"] .tag           { background: rgba(31,110,200,.10); color: #1558A8; }
+html[data-theme="sky"] .tag-soft      { background: rgba(31,110,200,.10); color: #1558A8; }
+html[data-theme="sky"] .tag-skill     { background: rgba(24,120,160,.09); color: #1878A0; }
+html[data-theme="sky"] .tag-location  { background: rgba(42,128,72,.09);  color: #2A8048; }
+html[data-theme="sky"] .tag-exclusion { background: rgba(176,40,48,.09);  color: #B02830; }
+html[data-theme="sky"] .tag-company   { background: rgba(192,64,112,.09); color: #C04070; }
+html[data-theme="sky"] .tag-nice      { background: rgba(42,128,72,.09);  color: #2A8048; }
+html[data-theme="sky"] .tag-custom    { background: rgba(42,128,72,.09);  color: #2A8048; }
+html[data-theme="sky"] .tag-ai        { background: rgba(31,110,200,.10); color: #1558A8; }
+html[data-theme="sky"] .profile-detail .profile-section { padding-left: .9rem; border-left: 3px solid transparent; margin-left: -.9rem; }
+html[data-theme="sky"] .profile-section:nth-child(1)  { border-left-color: #1F6EC8; }
+html[data-theme="sky"] .profile-section:nth-child(2)  { border-left-color: #1898B0; }
+html[data-theme="sky"] .profile-section:nth-child(3)  { border-left-color: #1878A0; }
+html[data-theme="sky"] .profile-section:nth-child(4)  { border-left-color: #2A8048; }
+html[data-theme="sky"] .profile-section:nth-child(5)  { border-left-color: #C04070; }
+html[data-theme="sky"] .profile-section:nth-child(6)  { border-left-color: #2A8048; }
+html[data-theme="sky"] .profile-section:nth-child(7)  { border-left-color: #B02830; }
+html[data-theme="sky"] .profile-section:nth-child(8)  { border-left-color: #1F6EC8; }
+html[data-theme="sky"] .profile-section:nth-child(9)  { border-left-color: #1898B0; }
+html[data-theme="sky"] .profile-section:nth-child(10) { border-left-color: #1878A0; }
+html[data-theme="sky"] .stat-ochre .stat-num { color: #C07830; }
+html[data-theme="sky"] .stat-blue  .stat-num { color: #1F6EC8; }
+html[data-theme="sky"] .stat-plum  .stat-num { color: #C04070; }
+html[data-theme="sky"] .stat-green .stat-num { color: #2A8048; }
+html[data-theme="sky"] .tab.active .tab-count { background: rgba(31,110,200,.14); color: #1558A8; }
+html[data-theme="sky"] .btn-toggle-desc:hover { color: #EEF5FD; }
+
+/* ── Sand theme (warm parchment light) ───────────────────────── */
+html[data-theme="sand"] .navbar { border-bottom-color: #D8C898; }
+html[data-theme="sand"] .profile-card { background: #FFFEF8; border-color: #D8C898; }
+html[data-theme="sand"] .profile-stats { border-top-color: #D8C898; }
+html[data-theme="sand"] .filter-bar { background: #F5E0D4; border-color: #D8B898; border-left: 4px solid #9A4820; border-radius: var(--radius); }
+html[data-theme="sand"] .job-card { background: #FFFEF8; border-color: #D8C898; border-left-color: #D8C898; box-shadow: 0 2px 10px rgba(44,30,8,.08), inset 0 1px 0 rgba(255,255,255,.9); }
+html[data-theme="sand"] .job-card[data-status="new"]          { border-left-color: #9A4820; }
+html[data-theme="sand"] .job-card[data-status="saved"]        { border-left-color: #3870A0; }
+html[data-theme="sand"] .job-card[data-status="applied"]      { border-left-color: #2A5078; }
+html[data-theme="sand"] .job-card[data-status="phone_screen"] { border-left-color: #3A7028; }
+html[data-theme="sand"] .job-card[data-status="interview_1"],
+html[data-theme="sand"] .job-card[data-status="interview_2"],
+html[data-theme="sand"] .job-card[data-status="interview_3"]  { border-left-color: #C06020; }
+html[data-theme="sand"] .job-card[data-status="offer"]        { border-left-color: #3A7028; }
+html[data-theme="sand"] .job-card[data-status="rejected"],
+html[data-theme="sand"] .job-card[data-status="missing_info"] { border-left-color: #982020; }
+html[data-theme="sand"] .job-card[data-status="withdrawn"]    { border-left-color: #D8C898; }
+html[data-theme="sand"] .job-card-actions { background: #FAF4E8; border-top-color: #ECDFC0; }
+html[data-theme="sand"] .score-pill-mgr { background: rgba(154,72,32,.12); color: #782E08; border: 1px solid rgba(154,72,32,.35); }
+html[data-theme="sand"] .score-pill-you { background: rgba(48,112,96,.12); color: #246050; border: 1px solid rgba(48,112,96,.35); }
+html[data-theme="sand"] .ai-note-mgr { background: rgba(154,72,32,.09); border-left: 4px solid rgba(154,72,32,.55); border-radius: var(--radius-sm); }
+html[data-theme="sand"] .ai-note-mgr .ai-note-label { color: #782E08; }
+html[data-theme="sand"] .ai-note-mgr .ai-note-bullets { color: #6A5030; }
+html[data-theme="sand"] .ai-note-you { background: rgba(48,112,96,.09); border-left: 4px solid rgba(48,112,96,.55); border-radius: var(--radius-sm); }
+html[data-theme="sand"] .ai-note-you .ai-note-label { color: #246050; }
+html[data-theme="sand"] .ai-note-you .ai-note-bullets { color: #4A6050; }
+html[data-theme="sand"] .match-card:not(.candidate-card) { background: rgba(154,72,32,.07); border: 1px solid rgba(154,72,32,.25); border-left: 5px solid #9A4820; }
+html[data-theme="sand"] .match-card:not(.candidate-card) h3 { color: #782E08; }
+html[data-theme="sand"] .match-card:not(.candidate-card) .ai-note-bullets { color: #6A5030; }
+html[data-theme="sand"] .candidate-card { background: rgba(48,112,96,.07); border: 1px solid rgba(48,112,96,.22); border-left: 5px solid #307060; }
+html[data-theme="sand"] .candidate-card h3 { color: #246050; }
+html[data-theme="sand"] .candidate-card .ai-note-bullets { color: #4A6050; }
+html[data-theme="sand"] .description-section { background: rgba(154,72,32,.05); border-color: rgba(154,72,32,.18); }
+html[data-theme="sand"] .description-section h3 { color: #782E08; }
+html[data-theme="sand"] .pairs-match { background: rgba(58,112,40,.09); border-left: 4px solid #3A7028; }
+html[data-theme="sand"] .pairs-match .pairs-icon { color: #3A7028; }
+html[data-theme="sand"] .pairs-gap { background: rgba(152,32,32,.09); border-left: 4px solid #982020; }
+html[data-theme="sand"] .pairs-gap .pairs-icon { color: #982020; }
+html[data-theme="sand"] .sidebar-card.sidebar-actions { background: rgba(154,72,32,.07); border: 1px solid rgba(154,72,32,.22); border-left: 4px solid #9A4820; }
+html[data-theme="sand"] .sidebar-card.sidebar-actions > h3 { color: #782E08; }
+html[data-theme="sand"] .sidebar-card.sidebar-status { background: rgba(58,112,40,.06); border: 1px solid rgba(58,112,40,.18); border-left: 4px solid #3A7028; }
+html[data-theme="sand"] .sidebar-card.sidebar-status > h3 { color: #3A7028; }
+html[data-theme="sand"] .sidebar-card.sidebar-notes { background: rgba(48,112,96,.06); border: 1px solid rgba(48,112,96,.18); border-left: 4px solid #307060; }
+html[data-theme="sand"] .sidebar-card.sidebar-notes > h3 { color: #246050; }
+html[data-theme="sand"] .sidebar-card.sidebar-meta { background: rgba(42,80,120,.06); border: 1px solid rgba(42,80,120,.16); border-left: 4px solid #2A5078; }
+html[data-theme="sand"] .sidebar-card.sidebar-meta > h3 { color: #2A5078; }
+html[data-theme="sand"] .job-detail-header { background: #FFFEF8; border-color: #D8C898; }
+html[data-theme="sand"] .job-detail-header::before { height: 4px; background: #9A4820; }
+html[data-theme="sand"] .status-new          { background: rgba(154,72,32,.14);  color: #782E08; }
+html[data-theme="sand"] .status-saved        { background: rgba(56,112,160,.13); color: #2A5078; }
+html[data-theme="sand"] .status-applied      { background: rgba(42,80,120,.13);  color: #2A5078; }
+html[data-theme="sand"] .status-phone_screen { background: rgba(58,112,40,.13);  color: #3A7028; }
+html[data-theme="sand"] .status-interview_1,
+html[data-theme="sand"] .status-interview_2,
+html[data-theme="sand"] .status-interview_3  { background: rgba(192,96,32,.13);  color: #904018; }
+html[data-theme="sand"] .status-offer        { background: rgba(58,112,40,.15);  color: #3A7028; }
+html[data-theme="sand"] .status-rejected     { background: rgba(152,32,32,.13);  color: #982020; }
+html[data-theme="sand"] .status-withdrawn    { background: rgba(106,80,48,.09);  color: #7A5830; }
+html[data-theme="sand"] .status-missing_info { background: rgba(106,80,48,.07);  color: #7A5830; }
+html[data-theme="sand"] .remote-remote  { background: rgba(58,112,40,.11);  color: #3A7028; }
+html[data-theme="sand"] .remote-hybrid  { background: rgba(48,112,96,.11);  color: #246050; }
+html[data-theme="sand"] .remote-on-site { background: rgba(154,72,32,.11);  color: #782E08; }
+html[data-theme="sand"] .tag           { background: rgba(154,72,32,.10); color: #782E08; }
+html[data-theme="sand"] .tag-soft      { background: rgba(154,72,32,.10); color: #782E08; }
+html[data-theme="sand"] .tag-skill     { background: rgba(42,80,120,.09); color: #2A5078; }
+html[data-theme="sand"] .tag-location  { background: rgba(58,112,40,.09); color: #3A7028; }
+html[data-theme="sand"] .tag-exclusion { background: rgba(152,32,32,.09); color: #982020; }
+html[data-theme="sand"] .tag-company   { background: rgba(160,48,88,.09); color: #A03058; }
+html[data-theme="sand"] .tag-nice      { background: rgba(58,112,40,.09); color: #3A7028; }
+html[data-theme="sand"] .tag-custom    { background: rgba(58,112,40,.09); color: #3A7028; }
+html[data-theme="sand"] .tag-ai        { background: rgba(154,72,32,.10); color: #782E08; }
+html[data-theme="sand"] .profile-detail .profile-section { padding-left: .9rem; border-left: 3px solid transparent; margin-left: -.9rem; }
+html[data-theme="sand"] .profile-section:nth-child(1)  { border-left-color: #9A4820; }
+html[data-theme="sand"] .profile-section:nth-child(2)  { border-left-color: #3870A0; }
+html[data-theme="sand"] .profile-section:nth-child(3)  { border-left-color: #2A5078; }
+html[data-theme="sand"] .profile-section:nth-child(4)  { border-left-color: #3A7028; }
+html[data-theme="sand"] .profile-section:nth-child(5)  { border-left-color: #A03058; }
+html[data-theme="sand"] .profile-section:nth-child(6)  { border-left-color: #3A7028; }
+html[data-theme="sand"] .profile-section:nth-child(7)  { border-left-color: #982020; }
+html[data-theme="sand"] .profile-section:nth-child(8)  { border-left-color: #9A4820; }
+html[data-theme="sand"] .profile-section:nth-child(9)  { border-left-color: #3870A0; }
+html[data-theme="sand"] .profile-section:nth-child(10) { border-left-color: #2A5078; }
+html[data-theme="sand"] .stat-ochre .stat-num { color: #9A4820; }
+html[data-theme="sand"] .stat-blue  .stat-num { color: #3870A0; }
+html[data-theme="sand"] .stat-plum  .stat-num { color: #A03058; }
+html[data-theme="sand"] .stat-green .stat-num { color: #3A7028; }
+html[data-theme="sand"] .tab.active .tab-count { background: rgba(154,72,32,.13); color: #782E08; }
+html[data-theme="sand"] .btn-toggle-desc:hover { color: #FAF4E8; }
