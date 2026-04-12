@@ -31,6 +31,8 @@ The installer bundles everything — no separate downloads happen during install
 
 This opens a terminal window running the app. **To stop JobWise**, switch to that terminal and press `Ctrl+C` (or close the terminal window). Closing the browser tab alone does not stop it.
 
+> **First run heads-up:** The first time you click "Find New Jobs", JobWise fetches and scores a large batch of jobs. This can take **30–60 minutes** depending on how many jobs are found and uses a significant number of AI tokens. If you hit a usage limit mid-way through, the run will stop automatically — just click "Find New Jobs" again later and it will pick up where it left off, only scoring the jobs it hasn't seen yet.
+
 > Already comfortable with Python and Git? See [For Technical Users](#for-technical-users) below for the manual setup.
 
 ---
@@ -110,7 +112,7 @@ The easiest way to get started is the one-click installer — see the [Quick Sta
 
 This opens a terminal window running the app. **To stop JobWise**, switch to that terminal and press `Ctrl+C` (or just close the terminal window). Closing the browser tab alone does not stop it.
 
-Then click **Find New Jobs** on your profile to fetch and score the latest postings. The first search can take 10–30 minutes depending on how many jobs are found; repeat searches are much faster since only new postings are scored.
+Then click **Find New Jobs** on your profile to fetch and score the latest postings. The first search can take 30–60 minutes depending on how many jobs are found; repeat searches are much faster since only new postings are scored.
 
 For help using the web UI, see the **[User Guide →](docs/user-guide.md)**
 
