@@ -9,6 +9,9 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write   # required to upload assets to GitHub Releases
+
 jobs:
   # ─────────────────────────────────────────────────────────────
   # Windows — NSIS installer → JobWise-Setup.exe
@@ -23,11 +26,12 @@ jobs:
         run: choco install nsis --no-progress -y
 
       - name: Prepare clean source tree
-        shell: bash
+        shell: pwsh
         run: |
-          # Export a clean copy of the repo (no .git, no venv, no .env, no __pycache__)
-          mkdir -p installer/windows/source
-          git archive HEAD | tar -x -C installer/windows/source
+          New-Item -ItemType Directory -Force -Path "installer\windows\source" | Out-Null
+          git archive HEAD -o source.zip
+          Expand-Archive -Path source.zip -DestinationPath "installer\windows\source" -Force
+          Remove-Item source.zip
 
       - name: Create placeholder icon (if missing)
         shell: pwsh
@@ -58,7 +62,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: JobWise-Setup.exe
-          generate_release_notes: true
+          fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -100,6 +104,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: JobWise-Mac.dmg
-          generate_release_notes: true
+          fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
