@@ -12,6 +12,12 @@ A self-hosted, AI-powered job search assistant. It fetches postings from multipl
 
 ---
 
+## How it works
+
+![How JobWise Works](docs/img/flow.png)
+
+---
+
 ## ⚡ Quick Start
 
 **No Git, no Terminal, no technical knowledge needed. Just download and double-click.**

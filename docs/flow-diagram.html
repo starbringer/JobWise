@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>JobWise — How It Works</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    background: #ffffff;
+  }
+
+  /* ── Slide fills the entire viewport ───────────────── */
+  .slide {
+    width: 100vw;
+    height: 100vh;
+    background: #ffffff;
+    padding: 36px 56px 32px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* top accent bar */
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 7px;
+    background: linear-gradient(90deg,
+      #10b981 0%, #3b82f6 30%, #8b5cf6 60%, #f43f5e 85%, #f59e0b 100%);
+  }
+
+  /* subtle bg decoration */
+  .bg-circle {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.04;
+    background: #6366f1;
+    pointer-events: none;
+  }
+
+  /* ── Header ─────────────────────────────────────────── */
+  .header {
+    text-align: center;
+    flex-shrink: 0;
+    margin-bottom: 28px;
+  }
+  .header h1 {
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: #0f172a;
+    line-height: 1.1;
+  }
+  .header h1 span {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header p {
+    margin-top: 8px;
+    font-size: 20px;
+    color: #64748b;
+  }
+
+  /* ── Main flow row ──────────────────────────────────── */
+  .flow {
+    display: flex;
+    align-items: stretch;
+    flex: 1;
+    min-height: 0;
+    gap: 0;
+  }
+
+  /* ── Section wrappers ───────────────────────────────── */
+  .section-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    flex-shrink: 0;
+  }
+  .section-label {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 14px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .section-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1;
+  }
+
+  /* ── Cards ──────────────────────────────────────────── */
+  .card {
+    border-radius: 18px;
+    padding: 24px 26px;
+    position: relative;
+    flex: 1;
+    width: 220px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.09);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .badge {
+    position: absolute;
+    top: -12px;
+    left: 18px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.22);
+  }
+
+  .card-icon {
+    font-size: 38px;
+    margin-bottom: 10px;
+    display: block;
+    line-height: 1;
+  }
+  .card-title {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+  .card-desc {
+    font-size: 14px;
+    line-height: 1.55;
+    opacity: 0.78;
+  }
+
+  /* card themes */
+  .c-install { background: linear-gradient(145deg,#d1fae5,#a7f3d0); color:#064e3b; }
+  .c-install .badge { background:#10b981; }
+  .c-profile { background: linear-gradient(145deg,#dcfce7,#bbf7d0); color:#14532d; }
+  .c-profile .badge { background:#22c55e; }
+
+  .c-fetch   { background: linear-gradient(145deg,#dbeafe,#bfdbfe); color:#1e3a8a; }
+  .c-fetch   .badge { background:#3b82f6; }
+  .c-filter  { background: linear-gradient(145deg,#e0e7ff,#c7d2fe); color:#312e81; }
+  .c-filter  .badge { background:#6366f1; }
+  .c-ai      { background: linear-gradient(145deg,#ede9fe,#ddd6fe); color:#4c1d95; }
+  .c-ai      .badge { background:#8b5cf6; }
+  .c-results { background: linear-gradient(145deg,#fef3c7,#fde68a); color:#78350f; }
+  .c-results .badge { background:#d97706; }
+
+  .c-review  { background: linear-gradient(145deg,#e0f2fe,#bae6fd); color:#0c4a6e; }
+  .c-review  .badge { background:#0ea5e9; }
+  .c-apply   { background: linear-gradient(145deg,#fce7f3,#fbcfe8); color:#831843; }
+  .c-apply   .badge { background:#ec4899; }
+  .c-track   { background: linear-gradient(145deg,#ffe4e6,#fecdd3); color:#881337; }
+  .c-track   .badge { background:#f43f5e; }
+
+  /* ── Pipeline group box ─────────────────────────────── */
+  .pipeline-wrap {
+    position: relative;
+    padding: 32px 24px 24px;
+    border: 2.5px dashed #cbd5e1;
+    border-radius: 24px;
+    background: #f8fafc;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .pipeline-tag {
+    position: absolute;
+    top: -15px;
+    left: 24px;
+    background: #f8fafc;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 4px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    white-space: nowrap;
+  }
+  .pipeline-inner {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    flex: 1;
+  }
+  /* pipeline cards stretch to fill height */
+  .pipeline-inner .card {
+    width: auto;
+    flex: 1;
+  }
+
+  /* ── Arrow connectors ───────────────────────────────── */
+  .arrow {
+    flex-shrink: 0;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .arrow svg { overflow: visible; }
+
+  /* ── Loop footer ────────────────────────────────────── */
+  .loop-footer {
+    flex-shrink: 0;
+    margin-top: 24px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #f0fdfa, #e6fffa);
+    border: 2px solid #99f6e4;
+    padding: 18px 36px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .loop-icon { font-size: 28px; flex-shrink: 0; }
+  .loop-badge {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f766e;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .loop-divider {
+    width: 2px;
+    height: 28px;
+    background: #99f6e4;
+    flex-shrink: 0;
+  }
+  .loop-text {
+    font-size: 15px;
+    color: #0d9488;
+    line-height: 1.55;
+  }
+  .loop-text strong { font-weight: 700; }
+
+  /* ── Dismiss note ───────────────────────────────────── */
+  .dismiss-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 12px 16px;
+    flex-shrink: 0;
+  }
+  .dismiss-note span:first-child { font-size: 20px; }
+  .dismiss-note span:last-child  { font-size: 13px; color: #94a3b8; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="bg-circle" style="width:600px;height:600px;top:-150px;right:-120px;"></div>
+<div class="bg-circle" style="width:400px;height:400px;bottom:-100px;left:-80px;"></div>
+
+<div class="slide">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>How <span>JobWise</span> Works</h1>
+    <p>Your personal AI-powered job search — from profile to offer, fully automated</p>
+  </div>
+
+  <!-- Main flow -->
+  <div class="flow">
+
+    <!-- ① Setup section -->
+    <div class="section-wrap">
+      <div class="section-label">One-Time Setup</div>
+      <div class="section-cards">
+        <div class="card c-install">
+          <span class="badge">1</span>
+          <span class="card-icon">🚀</span>
+          <div class="card-title">Install JobWise</div>
+          <div class="card-desc">One-click installer.<br>No coding needed.</div>
+        </div>
+        <div class="card c-profile">
+          <span class="badge">2</span>
+          <span class="card-icon">👤</span>
+          <div class="card-title">Build Your Profile</div>
+          <div class="card-desc">Upload resume or fill<br>in a simple form.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arrow 1 -->
+    <div class="arrow">
+      <svg width="48" height="20" viewBox="0 0 48 20">
+        <line x1="0" y1="10" x2="33" y2="10" stroke="#94a3b8" stroke-width="2.5" stroke-dasharray="5 4"/>
+        <polygon points="33,5 48,10 33,15" fill="#94a3b8"/>
+      </svg>
+    </div>
+
+    <!-- ② Pipeline section -->
+    <div class="section-wrap" style="flex:1; min-width:0;">
+      <div class="section-label">Every time you click "Find New Jobs"</div>
+      <div class="pipeline-wrap">
+        <div class="pipeline-tag">🔁&nbsp; Automated Pipeline — runs in the background</div>
+        <div class="pipeline-inner">
+
+          <div class="card c-fetch">
+            <span class="badge">3</span>
+            <span class="card-icon">📡</span>
+            <div class="card-title">Fetch Listings</div>
+            <div class="card-desc">Greenhouse · Lever<br>JSearch · LinkedIn<br>Indeed</div>
+          </div>
+
+          <div class="arrow">
+            <svg width="44" height="20" viewBox="0 0 44 20">
+              <line x1="0" y1="10" x2="30" y2="10" stroke="#94a3b8" stroke-width="2.5"/>
+              <polygon points="30,5 44,10 30,15" fill="#94a3b8"/>
+            </svg>
+          </div>
+
+          <div class="card c-filter">
+            <span class="badge">4</span>
+            <span class="card-icon">🔒</span>
+            <div class="card-title">Hard Filters</div>
+            <div class="card-desc">Title · Salary<br>Location · Remote<br>Country</div>
+          </div>
+
+          <div class="arrow">
+            <svg width="44" height="20" viewBox="0 0 44 20">
+              <line x1="0" y1="10" x2="30" y2="10" stroke="#94a3b8" stroke-width="2.5"/>
+              <polygon points="30,5 44,10 30,15" fill="#94a3b8"/>
+            </svg>
+          </div>
+
+          <div class="card c-ai">
+            <span class="badge">5</span>
+            <span class="card-icon">🤖</span>
+            <div class="card-title">AI Scoring</div>
+            <div class="card-desc">Dual perspective:<br>hiring manager<br>and your own view</div>
+          </div>
+
+          <div class="arrow">
+            <svg width="44" height="20" viewBox="0 0 44 20">
+              <line x1="0" y1="10" x2="30" y2="10" stroke="#94a3b8" stroke-width="2.5"/>
+              <polygon points="30,5 44,10 30,15" fill="#94a3b8"/>
+            </svg>
+          </div>
+
+          <div class="card c-results">
+            <span class="badge">6</span>
+            <span class="card-icon">⭐</span>
+            <div class="card-title">Top Matches</div>
+            <div class="card-desc">Best-fit jobs ranked<br>and surfaced first<br>in the web UI</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Arrow 2 -->
+    <div class="arrow">
+      <svg width="48" height="20" viewBox="0 0 48 20">
+        <line x1="0" y1="10" x2="33" y2="10" stroke="#94a3b8" stroke-width="2.5" stroke-dasharray="5 4"/>
+        <polygon points="33,5 48,10 33,15" fill="#94a3b8"/>
+      </svg>
+    </div>
+
+    <!-- ③ Review & Act section -->
+    <div class="section-wrap">
+      <div class="section-label">Review &amp; Act</div>
+      <div class="section-cards">
+        <div class="card c-review">
+          <span class="badge">7</span>
+          <span class="card-icon">🔍</span>
+          <div class="card-title">Review Matches</div>
+          <div class="card-desc">Browse ranked jobs<br>in the web UI</div>
+        </div>
+        <div class="card c-apply">
+          <span class="badge">8</span>
+          <span class="card-icon">✉️</span>
+          <div class="card-title">Save &amp; Apply</div>
+          <div class="card-desc">One click to mark<br>as Applied</div>
+        </div>
+        <div class="card c-track">
+          <span class="badge">9</span>
+          <span class="card-icon">📊</span>
+          <div class="card-title">Track Progress</div>
+          <div class="card-desc">Screen → Interviews<br>→ Offer / Rejected</div>
+        </div>
+        <div class="dismiss-note">
+          <span>👎</span>
+          <span>Not a fit? Dismiss and move on</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /flow -->
+
+  <!-- Loop footer -->
+  <div class="loop-footer">
+    <span class="loop-icon">🔄</span>
+    <span class="loop-badge">Smart Incremental Runs</span>
+    <div class="loop-divider"></div>
+    <div class="loop-text">
+      Click <strong>"Find New Jobs"</strong> anytime — JobWise fetches and scores only the jobs it hasn't seen yet.
+      No duplicate work, no wasted AI tokens. Your scored history is always preserved.
+    </div>
+  </div>
+
+</div><!-- /slide -->
+</body>
+</html>
