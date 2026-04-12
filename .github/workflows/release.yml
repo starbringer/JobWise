@@ -26,8 +26,8 @@ jobs:
         shell: bash
         run: |
           # Export a clean copy of the repo (no .git, no venv, no .env, no __pycache__)
+          mkdir -p installer/windows/source
           git archive HEAD | tar -x -C installer/windows/source
-        # Note: git archive respects .gitignore and only exports tracked files
 
       - name: Create placeholder icon (if missing)
         shell: pwsh
