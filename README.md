@@ -20,14 +20,14 @@ A self-hosted, AI-powered job search assistant. It fetches postings from multipl
 
 ## ⚡ Quick Start
 
-**No Git, no Terminal, no technical knowledge needed. Just download and double-click.**
+**Download and double-click.**
 
 | Platform | Download | Then… |
 |----------|----------|-------|
 | **Windows** | [**JobWise-Setup.exe**](https://github.com/starbringer/JobWise/releases/latest/download/JobWise-Setup.exe) | Double-click the downloaded file |
 | **Mac** | [**JobWise-Mac.dmg**](https://github.com/starbringer/JobWise/releases/latest/download/JobWise-Mac.dmg) | Open the DMG, then double-click **Install JobWise** |
 
-The installer bundles everything — no separate downloads happen during installation (only Python is fetched automatically if you don't have it). A setup wizard walks you through your API keys and profile when the installer finishes.
+A setup wizard walks you through your API keys and profile when the installer finishes.
 
 > **Mac note:** macOS may warn "app from unidentified developer" on first open. Right-click the `.command` file inside the DMG → **Open** → **Open** to allow it once.
 
