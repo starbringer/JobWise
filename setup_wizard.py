@@ -533,7 +533,17 @@ def _collect_resume_path(profile_name: str, attempts: int = 3) -> Path:
                 info("Please use a .pdf, .docx, .txt, or .md file.")
             else:
                 dest = PROFILES_DIR / f"{profile_name}{path.suffix.lower()}"
-                shutil.copy2(path, dest)
+                try:
+                    shutil.copy2(path, dest)
+                except PermissionError:
+                    home = Path.home()
+                    err(f"Permission denied reading: {cleaned}")
+                    info("The file is in a folder this script cannot read.")
+                    info(f"Move it directly into your home folder:  {home}")
+                    info("Then paste the updated path and try again.")
+                    if attempt < attempts - 1:
+                        info("Please try again with the updated path.")
+                    continue
                 ok(f"Resume copied → profiles/{dest.name}")
                 return dest
 
@@ -692,8 +702,8 @@ def _launch_web():
         kwargs["start_new_session"] = True
     subprocess.Popen(cmd, **kwargs)
     time.sleep(2)
-    webbrowser.open("http://localhost:5000")
-    ok("Web UI opened at http://localhost:5000")
+    webbrowser.open("http://localhost:6868")
+    ok("Web UI opened at http://localhost:6868")
     blank()
 
 

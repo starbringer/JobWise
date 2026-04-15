@@ -449,6 +449,103 @@ button { cursor: pointer; }
   color: var(--text-muted);
 }
 
+/* ── Profile setup banner (needs-setup state) ──────────────── */
+.profile-card-pending { cursor: default; pointer-events: none; }
+.profile-card-pending a { pointer-events: none; }
+/* Re-enable the Settings link inside the no-AI banner */
+.profile-setup-no-ai a { pointer-events: all; cursor: pointer; }
+
+.profile-setup-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: .55rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: .65rem .85rem;
+  margin-top: .6rem;
+  font-size: .82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  flex-wrap: wrap;
+}
+.profile-setup-no-ai { color: var(--text); }
+.profile-setup-no-ai a { color: var(--accent); text-decoration: underline; }
+.profile-setup-error { border-color: var(--red, #c55); color: var(--red, #c55); }
+
+.setup-elapsed {
+  margin-left: auto;
+  font-size: .75rem;
+  white-space: nowrap;
+  color: var(--text-muted);
+  opacity: .7;
+}
+
+/* Spinning dot — matches btn-spinner style used by Find New Jobs */
+.setup-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .75s linear infinite;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Import resume form (empty-state) ──────────────────────── */
+.import-resume-form {
+  display: inline-flex;
+  flex-direction: column;
+  gap: .75rem;
+  text-align: left;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  margin: 1rem auto;
+  width: 100%;
+  max-width: 520px;
+}
+.import-field { display: flex; flex-direction: column; gap: .3rem; }
+.import-field label { font-size: .8rem; font-weight: 600; color: var(--text-muted); }
+.import-hint { font-weight: 400; }
+.import-field input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: .45rem .75rem;
+  font-size: .9rem;
+  color: var(--text);
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+.import-field input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.btn-import {
+  align-self: flex-start;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: .5rem 1.25rem;
+  font-size: .875rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: .25rem;
+}
+.btn-import:disabled { opacity: .6; cursor: default; }
+.import-error { color: var(--red, #e05); font-size: .85rem; margin: 0; }
+.import-tip {
+  font-size: .78rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.6;
+}
+.empty-alt { font-size: .82rem; color: var(--text-muted); margin-top: 1.5rem; }
+
 /* ── Status badges ─────────────────────────────────────────── */
 .status-badge {
   display: inline-block;

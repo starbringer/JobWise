@@ -1,9 +1,12 @@
 """
 web/app.py — Flask web application for the job finder.
-Accessible on local network at http://0.0.0.0:5000
+Accessible on local network at http://0.0.0.0:6868
 """
 
 import json
+import os
+import re
+import shutil
 import sys
 import threading
 import time as _time
@@ -68,6 +71,77 @@ def _run_pipeline_bg(name: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Profile-extract state — tracks background AI-extraction runs for new profiles.
+# Only one extraction can run at a time.
+# ---------------------------------------------------------------------------
+_extract_lock = threading.Lock()
+_extract_state: dict = {
+    "status": "idle",       # idle | running | done | error
+    "profile": None,
+    "started_at": None,
+    "finished_at": None,
+    "error": None,
+}
+
+
+def _run_extract_bg(name: str) -> None:
+    """Background thread: runs profile_processor.process() for a newly discovered profile."""
+    try:
+        from src import profile_processor  # lazy import
+        config = load_config()
+        profiles_dir = PROJECT_ROOT / config.get("profiles_dir", "profiles")
+        conn = get_db()
+        profile_processor.process(conn, name, profiles_dir)
+        conn.close()
+        with _extract_lock:
+            _extract_state.update({
+                "status": "done",
+                "finished_at": _time.time(),
+                "error": None,
+            })
+    except Exception as exc:
+        with _extract_lock:
+            _extract_state.update({
+                "status": "error",
+                "finished_at": _time.time(),
+                "error": str(exc),
+            })
+
+
+def _ai_configured() -> bool:
+    """Return True if the selected AI provider appears to have its credentials in place.
+
+    - claude_cli / ollama: no API key needed — always True.
+    - gemini / openai / anthropic: check os.environ first (loaded by dotenv on pipeline
+      runs), then fall back to parsing the .env file directly so the check works even
+      before the first pipeline run.
+    """
+    config = load_config()
+    provider = config.get("ai", {}).get("provider", "")
+    if provider in ("claude_cli", "ollama", ""):
+        return True
+    key_map = {
+        "gemini":    "GEMINI_API_KEY",
+        "openai":    "OPENAI_API_KEY",
+        "anthropic": "ANTHROPIC_API_KEY",
+    }
+    env_var = key_map.get(provider)
+    if not env_var:
+        return True  # unknown provider — optimistically assume configured
+    if os.environ.get(env_var):
+        return True
+    env_path = PROJECT_ROOT / ".env"
+    if env_path.exists():
+        for line in env_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, _, v = line.partition("=")
+                if k.strip() == env_var and v.strip():
+                    return True
+    return False
+
+
+# ---------------------------------------------------------------------------
 # Default configuration — used when config.yaml does not yet exist.
 # Mirrors config.sample.yaml so the app is fully functional out of the box.
 # ---------------------------------------------------------------------------
@@ -93,7 +167,7 @@ _DEFAULT_CONFIG: dict = {
     "jobspy": {"sites": ["linkedin", "indeed"], "results_per_site": 25},
     "scheduler": {"enabled": False, "run_times": ["11:00", "18:00"], "profiles": []},
     "api": {"jsearch_reset_day": 1},
-    "web": {"host": "0.0.0.0", "port": 5000, "debug": False},
+    "web": {"host": "0.0.0.0", "port": 6868, "debug": False},
     "database": {"path": "data/jobs.db"},
     "profiles_dir": "profiles",
     "job_retention_days": 30,
@@ -153,6 +227,25 @@ def get_db():
     return database.init_db(db_path)
 
 
+_PROFILE_EXTENSIONS = {".txt", ".md", ".pdf", ".docx"}
+
+
+def _auto_discover_profiles(conn, profiles_dir: Path) -> None:
+    """Register any profile files in profiles_dir that are not yet in the DB.
+
+    Called on every index page load so that files copied by the setup wizard
+    (or dropped manually into the profiles/ folder) appear immediately without
+    requiring a pipeline run first.
+    """
+    if not profiles_dir.exists():
+        return
+    for path in profiles_dir.iterdir():
+        if path.is_file() and path.suffix.lower() in _PROFILE_EXTENSIONS:
+            name = path.stem
+            if not database.get_profile(conn, name):
+                database.upsert_profile(conn, name, str(path))
+
+
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
@@ -160,6 +253,9 @@ def get_db():
 @app.route("/")
 def index():
     conn = get_db()
+    config = load_config()
+    profiles_dir = PROJECT_ROOT / config.get("profiles_dir", "profiles")
+    _auto_discover_profiles(conn, profiles_dir)
     profiles = conn.execute("SELECT * FROM profiles ORDER BY name").fetchall()
     profile_data = []
     for p in profiles:
@@ -180,9 +276,10 @@ def index():
             "active_applications": active,
             "new_jobs": status_counts.get("new", 0),
             "structured": json.loads(p["structured_content"]) if p["structured_content"] else {},
+            "needs_setup": not bool(p["structured_content"]),
         })
     conn.close()
-    return render_template("index.html", profiles=profile_data)
+    return render_template("index.html", profiles=profile_data, ai_ready=_ai_configured())
 
 
 @app.route("/profile/<name>")
@@ -421,6 +518,55 @@ def sync_profile(name):
     conn.close()
     # Pass flash message via query param (no session required)
     return redirect(url_for("profile_structured", name=name, msg=msg))
+
+
+@app.route("/api/profiles/register", methods=["POST"])
+def register_profile():
+    """Register a profile from a resume file path supplied by the user.
+
+    Accepts JSON: {"name": "alice", "file_path": "/path/to/resume.pdf"}
+    Copies the file into profiles/ and upserts the profile row in the DB.
+    The profile will be fully parsed (AI) on the next pipeline run.
+    """
+    data = request.json or {}
+    raw_name = (data.get("name") or "").strip()
+    file_path = (data.get("file_path") or "").strip().strip('"').strip("'")
+
+    if not raw_name:
+        return jsonify({"error": "Profile name is required."}), 400
+    name = re.sub(r"[^a-zA-Z0-9_-]", "_", raw_name).strip("_").lower() or "me"
+
+    if not file_path:
+        return jsonify({"error": "File path is required."}), 400
+
+    src = Path(file_path)
+    if not src.exists():
+        return jsonify({"error": f"File not found: {file_path}"}), 400
+    if src.suffix.lower() not in _PROFILE_EXTENSIONS:
+        return jsonify({"error": "Unsupported file type. Use .pdf, .docx, .txt, or .md"}), 400
+
+    config = load_config()
+    profiles_dir = PROJECT_ROOT / config.get("profiles_dir", "profiles")
+    profiles_dir.mkdir(parents=True, exist_ok=True)
+    dest = profiles_dir / f"{name}{src.suffix.lower()}"
+
+    try:
+        shutil.copy2(src, dest)
+    except PermissionError:
+        home_dir = str(Path.home())
+        return jsonify({
+            "error": (
+                f"Permission denied reading '{file_path}'. "
+                f"Move the file to your home folder ({home_dir}) and try again."
+            )
+        }), 400
+    except Exception as exc:
+        return jsonify({"error": str(exc)}), 500
+
+    conn = get_db()
+    database.upsert_profile(conn, name, str(dest))
+    conn.close()
+    return jsonify({"ok": True, "name": name})
 
 
 @app.route("/profile/<name>/job/<job_key>")
@@ -958,6 +1104,50 @@ def import_companies(name):
     return jsonify({"ok": True, "added": added, "total": len(companies)})
 
 
+@app.route("/api/profiles/<name>/extract", methods=["POST"])
+def api_profile_extract(name):
+    """Start a background AI extraction run for a newly registered profile.
+
+    Refuses to start if the pipeline or another extraction is already running.
+    """
+    conn = get_db()
+    profile = database.get_profile(conn, name)
+    conn.close()
+    if not profile:
+        abort(404)
+
+    with _pipeline_lock:
+        if _pipeline_state["status"] == "running":
+            return jsonify({"ok": False, "error": "pipeline_running"}), 409
+
+    with _extract_lock:
+        if _extract_state["status"] == "running":
+            return jsonify({
+                "ok": False,
+                "error": "already_running",
+                "profile": _extract_state["profile"],
+            }), 409
+        _extract_state.update({
+            "status": "running",
+            "profile": name,
+            "started_at": _time.time(),
+            "finished_at": None,
+            "error": None,
+        })
+
+    t = threading.Thread(target=_run_extract_bg, args=(name,), daemon=True)
+    t.start()
+    return jsonify({"ok": True})
+
+
+@app.route("/api/profiles/extract/status")
+def api_profile_extract_status():
+    """Return the current profile-extraction state as JSON (polled by the frontend)."""
+    with _extract_lock:
+        state = dict(_extract_state)
+    return jsonify(state)
+
+
 @app.route("/api/pipeline/run/<name>", methods=["POST"])
 def api_pipeline_run(name):
     """Start a background 'Find New Jobs' run for the given profile.
@@ -1003,6 +1193,6 @@ if __name__ == "__main__":
     web_cfg = config.get("web", {})
     app.run(
         host=web_cfg.get("host", "0.0.0.0"),
-        port=web_cfg.get("port", 5000),
+        port=web_cfg.get("port", 6868),
         debug=web_cfg.get("debug", False),
     )

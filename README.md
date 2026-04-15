@@ -29,7 +29,9 @@ A self-hosted, AI-powered job search assistant. It fetches postings from multipl
 
 A setup wizard walks you through your API keys and profile when the installer finishes.
 
-> **Mac note:** macOS may warn "app from unidentified developer" on first open. Right-click the `.command` file inside the DMG → **Open** → **Open** to allow it once.
+> **Mac note:** macOS blocks apps from unidentified developers by default. If you see a warning, there are two ways to allow it:
+> 1. **Right-click method (quickest):** Right-click (or Control-click) the `.command` file inside the DMG → **Open** → **Open** to allow it once.
+> 2. **System Settings method:** If the right-click method doesn't show an "Open" option, open **System Settings → Privacy & Security**, scroll to the bottom, and click **"Open Anyway"** next to the blocked app. You may need to enter your Mac password.
 
 **After setup, to open JobWise each day:**
 - **Windows** — double-click **`start.bat`** in your `JobWise` folder (default: `C:\Users\YourName\JobWise`)

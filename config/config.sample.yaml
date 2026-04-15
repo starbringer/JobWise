@@ -95,7 +95,7 @@ api:
 # Web app settings
 web:
   host: "0.0.0.0"        # 0.0.0.0 = accessible on local network
-  port: 5000
+  port: 6868
   debug: false
 
 # Database

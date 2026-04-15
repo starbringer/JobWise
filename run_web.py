@@ -28,12 +28,16 @@ if __name__ == "__main__":
     parser.add_argument("--host", default=None)
     args = parser.parse_args()
 
-    with open(PROJECT_ROOT / "config" / "config.yaml", encoding="utf-8") as f:
-        config = yaml.safe_load(f)
+    cfg_path = PROJECT_ROOT / "config" / "config.yaml"
+    if cfg_path.exists():
+        with open(cfg_path, encoding="utf-8") as f:
+            config = yaml.safe_load(f) or {}
+    else:
+        config = {}
 
     web_cfg = config.get("web", {})
     host = args.host or web_cfg.get("host", "0.0.0.0")
-    port = args.port or web_cfg.get("port", 5000)
+    port = args.port or web_cfg.get("port", 6868)
 
     from web.app import app
     try:
