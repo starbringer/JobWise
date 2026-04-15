@@ -469,7 +469,12 @@ def step5_profile_name():
     return name
 
 
-def step6_profile_file(profile_name: str):
+def step6_profile_file(profile_name: str) -> tuple:
+    """Returns (profile_path, is_real_file).
+
+    is_real_file=True  → real content was provided (PDF, docx, txt, md).
+    is_real_file=False → blank placeholder was created; no extraction makes sense yet.
+    """
     section(6, "Set up your profile")
     blank()
     print(textwrap.dedent("""\
@@ -489,7 +494,7 @@ def step6_profile_file(profile_name: str):
     existing = sorted(PROFILES_DIR.glob(f"{profile_name}.*"))
     if existing:
         ok(f"Profile '{profile_name}' already exists ({existing[0].name}) — keeping it.")
-        return existing[0]
+        return existing[0], True
 
     choice = ask_menu(
         "How would you like to set up your profile?",
@@ -501,9 +506,9 @@ def step6_profile_file(profile_name: str):
     )
 
     if choice == "file":
-        return _collect_resume_path(profile_name)
+        return _collect_resume_path(profile_name), True
     else:
-        return _create_blank_profile(profile_name)
+        return _create_blank_profile(profile_name), False
 
 
 def _collect_resume_path(profile_name: str, attempts: int = 3) -> Path:
@@ -577,15 +582,151 @@ def _create_blank_profile(profile_name: str) -> Path:
     return dest
 
 
+def _check_ai_ready_wizard(provider: str, env_keys: dict) -> bool:
+    """Return True if the chosen AI provider has credentials ready for use."""
+    if provider in ("claude_cli", "ollama"):
+        return True
+    key_map = {
+        "gemini":    "GEMINI_API_KEY",
+        "openai":    "OPENAI_API_KEY",
+        "anthropic": "ANTHROPIC_API_KEY",
+    }
+    env_var = key_map.get(provider)
+    if not env_var:
+        return True
+    # Key was just supplied in this wizard session
+    if env_keys.get(env_var):
+        return True
+    # Key may exist in .env from a previous run
+    if DOTENV.exists():
+        for line in DOTENV.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, _, v = line.partition("=")
+                if k.strip() == env_var and v.strip():
+                    return True
+    return False
+
+
+def _build_extract_script(profile_name: str, profile_file: Path) -> str:
+    """Build a self-contained Python script to run in the venv for profile extraction."""
+    root_r   = repr(str(ROOT))
+    config_r = repr(str(CONFIG))
+    name_r   = repr(profile_name)
+    file_r   = repr(str(profile_file))
+    return "\n".join([
+        "import sys",
+        "sys.path.insert(0, " + root_r + ")",
+        "from pathlib import Path",
+        "import yaml",
+        "from src import database, profile_processor",
+        "config_path = Path(" + config_r + ")",
+        "config = yaml.safe_load(open(config_path, encoding='utf-8')) if config_path.exists() else {}",
+        "config = config or {}",
+        "db_path = Path(" + root_r + ") / (config.get('database') or {}).get('path', 'data/jobs.db')",
+        "profiles_dir = Path(" + root_r + ") / config.get('profiles_dir', 'profiles')",
+        "db_path.parent.mkdir(parents=True, exist_ok=True)",
+        "conn = database.init_db(db_path)",
+        "database.upsert_profile(conn, " + name_r + ", " + file_r + ")",
+        "profile_processor.process(conn, " + name_r + ", profiles_dir)",
+        "conn.close()",
+        "print('__DONE__')",
+    ])
+
+
+def _run_extract_with_spinner(profile_name: str, profile_file: Path) -> bool:
+    """Run AI profile extraction inside the venv with an animated spinner.
+
+    Returns True on success, False on failure.
+    """
+    script = _build_extract_script(profile_name, profile_file)
+    state: dict = {"done": False, "error": None}
+
+    def _bg():
+        try:
+            proc = subprocess.run(
+                [str(VENV_PYTHON), "-c", script],
+                capture_output=True, text=True,
+                encoding="utf-8", errors="replace",
+                cwd=ROOT,
+            )
+            if proc.returncode != 0:
+                lines = (proc.stderr or proc.stdout or "unknown error").strip().splitlines()
+                state["error"] = lines[-1] if lines else "unknown error"
+            elif "__DONE__" not in proc.stdout:
+                state["error"] = "Extraction did not complete"
+        except Exception as exc:
+            state["error"] = str(exc)
+        state["done"] = True
+
+    t = threading.Thread(target=_bg, daemon=True)
+    t.start()
+
+    frame_idx = 0
+    while not state["done"]:
+        frame = SPINNER_FRAMES[frame_idx % len(SPINNER_FRAMES)]
+        print(
+            f"\r   {frame}  Reading your profile \u2014 building a picture of what you\u2019re looking for\u2026",
+            end="", flush=True,
+        )
+        time.sleep(0.12)
+        frame_idx += 1
+    print()  # newline after spinner
+
+    if state["error"]:
+        err(f"Profile import failed: {state['error'][:200]}")
+        return False
+    ok("Profile imported \u2014 your profile is ready.")
+    return True
+
+
+def step8_import_profile(profile_name: str, profile_file: Path, is_real_file: bool,
+                          provider: str, env_keys: dict) -> bool:
+    """Offer to import the profile into the database with AI extraction.
+
+    Returns True if the profile was successfully imported.
+    """
+    if not is_real_file:
+        return False  # blank placeholder — nothing meaningful to extract yet
+
+    section(8, "Import your profile")
+    blank()
+    print("   The AI will read your profile file and extract the key details")
+    print("   (target roles, location, skills, salary preferences).")
+    print("   This takes about 30\u201360 seconds and only needs to happen once.")
+    blank()
+
+    if not _check_ai_ready_wizard(provider, env_keys):
+        warn("Your AI provider isn\u2019t configured with an API key yet.")
+        info("You can set up the key later from the Settings tab in the web UI,")
+        info("then load your profile from the Profiles page.")
+        return False
+
+    want = ask_yn("Import your profile now?", default=True)
+    if not want:
+        blank()
+        info("No problem. When you open the web UI, use the \u2018Load Profile File\u2019")
+        info("form on the Profiles page to import your profile.")
+        return False
+
+    blank()
+    success = _run_extract_with_spinner(profile_name, profile_file)
+    if not success:
+        blank()
+        info("You can try again from the web UI \u2014 use the \u2018Load Profile File\u2019")
+        info("form on the Profiles page and select your file.")
+    return success
+
+
 def step7_write_config(provider: str, env_keys: dict, jsearch_day: int, profile_name: str):
     section(7, "Writing configuration files")
     write_dotenv(env_keys)
     write_config(provider, jsearch_day, profile_name)
 
 
-def step8_scheduler(profile_name: str) -> bool:
+def step9_scheduler(profile_name: str) -> bool:
     """Returns True if user wants scheduler but still needs to install it manually."""
-    section(8, "Automatic scheduling  (optional)")
+    section(9, "Automatic scheduling  (optional)")
     blank()
     print(c(BOLD, "   Two ways to get fresh jobs:"))
     blank()
@@ -730,9 +871,10 @@ def main():
     jsearch_keys, jsearch_day = step4_jsearch()
     env_keys.update(jsearch_keys)
     profile_name = step5_profile_name()
-    profile_file = step6_profile_file(profile_name)
+    profile_file, is_real_file = step6_profile_file(profile_name)
     step7_write_config(provider, env_keys, jsearch_day, profile_name)
-    scheduler_pending = step8_scheduler(profile_name)
+    step8_import_profile(profile_name, profile_file, is_real_file, provider, env_keys)
+    scheduler_pending = step9_scheduler(profile_name)
     step9_launch(provider, profile_name, profile_file, scheduler_pending)
 
 

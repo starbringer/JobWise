@@ -27,7 +27,7 @@ A self-hosted, AI-powered job search assistant. It fetches postings from multipl
 | **Windows** | [**JobWise-Setup.exe**](https://github.com/starbringer/JobWise/releases/latest/download/JobWise-Setup.exe) | Double-click the downloaded file |
 | **Mac** | [**JobWise-Mac.dmg**](https://github.com/starbringer/JobWise/releases/latest/download/JobWise-Mac.dmg) | Open the DMG, then double-click **Install JobWise** |
 
-A setup wizard walks you through your API keys and profile when the installer finishes.
+A setup wizard walks you through your API keys, profile file, and optional AI import when the installer finishes. If your AI provider is configured, the wizard offers to import your profile immediately so it's ready when you open the app.
 
 > **Mac note:** macOS blocks apps from unidentified developers by default. If you see a warning, there are two ways to allow it:
 > 1. **Right-click method (quickest):** Right-click (or Control-click) the `.command` file inside the DMG → **Open** → **Open** to allow it once.
@@ -204,13 +204,13 @@ Place your resume in the `profiles/` folder (`.txt`, `.md`, `.pdf`, or `.docx`).
 
 > ⚠️ **Privacy:** Remove personal identifiers (name, phone, address, email) before saving. The AI only needs your skills and preferences.
 
-### Step 8 — Start the web app
+### Step 8 — Start the web app and import your profile
 
 ```bash
 python run_web.py
 ```
 
-Open **http://localhost:5000**, then click **Find New Jobs** on your profile.
+Open **http://localhost:6868**. If no profile has been imported yet, use the **Load Profile File** form on the Profiles page to point JobWise at your file. The AI will extract your profile details (takes ~30–60 seconds), then click **Find New Jobs**.
 
 ### Step 9 — Set up automatic scheduling (optional)
 

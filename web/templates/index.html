@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% block title %}Profiles — Job Finder{% endblock %}
 
+{% set any_needs_setup = profiles | selectattr('needs_setup') | list | length > 0 %}
+
 {% block content %}
 <div class="page-header">
   <h1>Your Profiles</h1>
@@ -23,18 +25,16 @@
 
     {% if p.needs_setup %}
       {% if ai_ready %}
-      {# AI is configured — show spinner; JS will auto-trigger extraction #}
       <div class="profile-setup-banner" id="setup-banner-{{ p.name }}">
         <span class="setup-spinner"></span>
         <span class="setup-text" id="setup-text-{{ p.name }}">Reading your profile — building a picture of what you&rsquo;re looking for&hellip;</span>
         <span class="setup-elapsed" id="setup-elapsed-{{ p.name }}"></span>
       </div>
       {% else %}
-      {# AI is not yet configured — prompt the user to set it up first #}
       <div class="profile-setup-banner profile-setup-no-ai">
-        <span>&#9888;&#xFE0F; AI not configured yet.</span>
+        <span>&#9888; AI not configured yet.</span>
         <a href="{{ url_for('settings') }}" onclick="event.stopPropagation()">Go to Settings &rarr;</a>
-        <span>to add your API key, then come back and load your profile from file.</span>
+        <span>to add your API key, then come back here.</span>
       </div>
       {% endif %}
     {% else %}
@@ -79,12 +79,9 @@
   {% endfor %}
 </div>
 
-{% if ai_ready %}
-{# Auto-trigger profile extraction for any card that needs it #}
+{% if ai_ready and any_needs_setup %}
 <script>
 (function () {
-  var AI_READY = true;
-
   function fmtElapsed(startedAt) {
     var secs = Math.max(0, Math.floor(Date.now() / 1000 - startedAt));
     var m = Math.floor(secs / 60), s = secs % 60;
@@ -127,7 +124,6 @@
           currentProfile = state.profile;
           startedAt = state.started_at;
           startTick();
-          // nothing else to update — spinner is already showing
         } else if (state.status === 'done') {
           stopTick();
           clearInterval(pollTimer); pollTimer = null;
@@ -152,7 +148,7 @@
             .then(function (r) { return r.json(); })
             .then(function (data) {
               if (!data.ok && data.error !== 'already_running') {
-                setExtractText(name, '\u26a0 Could not start extraction: ' + (data.error || 'unknown error'));
+                setExtractText(name, '\u26a0 Could not start: ' + (data.error || 'unknown error'));
               }
             });
         }
@@ -160,20 +156,17 @@
       .catch(function () {});
   }
 
-  // Only run if there are profiles needing setup
-  if (profilesNeedingSetup().length) {
-    poll(); // immediate first check
-    pollTimer = setInterval(poll, 3000);
-  }
+  poll();
+  pollTimer = setInterval(poll, 3000);
 }());
 </script>
 {% endif %}
 
 {% else %}
+{# ── True empty state — no profiles in DB at all ── #}
 <div class="empty-state">
   <h2>No profiles yet</h2>
   <p>Load your profile file to get started:</p>
-
   <div class="import-resume-form" id="import-resume-form">
     <div class="import-field">
       <label for="import-name">Profile name</label>
@@ -190,17 +183,17 @@
       <strong>Tip (Windows):</strong> right-click the file in Explorer &rarr; &ldquo;Copy as path&rdquo;, then paste here.
     </p>
   </div>
-
   <p class="empty-alt">Or run the guided setup wizard for a full walkthrough:</p>
   <pre>python setup_wizard.py</pre>
 </div>
+{% endif %}
 
 <script>
 async function importProfile() {
-  const name = document.getElementById('import-name').value.trim();
-  const filePath = document.getElementById('import-path').value.trim();
-  const errEl = document.getElementById('import-error');
-  const btn = document.getElementById('import-btn');
+  var name = document.getElementById('import-name').value.trim();
+  var filePath = document.getElementById('import-path').value.trim();
+  var errEl = document.getElementById('import-error');
+  var btn = document.getElementById('import-btn');
 
   errEl.style.display = 'none';
   if (!name || !filePath) {
@@ -213,12 +206,12 @@ async function importProfile() {
   btn.textContent = 'Loading\u2026';
 
   try {
-    const res = await fetch('/api/profiles/register', {
+    var res = await fetch('/api/profiles/register', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({name, file_path: filePath}),
+      body: JSON.stringify({name: name, file_path: filePath}),
     });
-    const data = await res.json();
+    var data = await res.json();
     if (data.ok) {
       window.location.reload();
     } else {
@@ -235,5 +228,4 @@ async function importProfile() {
   }
 }
 </script>
-{% endif %}
 {% endblock %}

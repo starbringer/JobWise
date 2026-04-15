@@ -230,22 +230,6 @@ def get_db():
 _PROFILE_EXTENSIONS = {".txt", ".md", ".pdf", ".docx"}
 
 
-def _auto_discover_profiles(conn, profiles_dir: Path) -> None:
-    """Register any profile files in profiles_dir that are not yet in the DB.
-
-    Called on every index page load so that files copied by the setup wizard
-    (or dropped manually into the profiles/ folder) appear immediately without
-    requiring a pipeline run first.
-    """
-    if not profiles_dir.exists():
-        return
-    for path in profiles_dir.iterdir():
-        if path.is_file() and path.suffix.lower() in _PROFILE_EXTENSIONS:
-            name = path.stem
-            if not database.get_profile(conn, name):
-                database.upsert_profile(conn, name, str(path))
-
-
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
@@ -253,9 +237,6 @@ def _auto_discover_profiles(conn, profiles_dir: Path) -> None:
 @app.route("/")
 def index():
     conn = get_db()
-    config = load_config()
-    profiles_dir = PROJECT_ROOT / config.get("profiles_dir", "profiles")
-    _auto_discover_profiles(conn, profiles_dir)
     profiles = conn.execute("SELECT * FROM profiles ORDER BY name").fetchall()
     profile_data = []
     for p in profiles:

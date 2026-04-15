@@ -495,9 +495,9 @@ button { cursor: pointer; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Import resume form (empty-state) ──────────────────────── */
+/* ── Import resume form (empty-state) ────── */
 .import-resume-form {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
   gap: .75rem;
   text-align: left;
