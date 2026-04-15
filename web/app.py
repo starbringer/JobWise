@@ -202,6 +202,12 @@ def profile_jobs(name):
     # hidden tab: all hidden scored jobs (dismissed by user or below top-N by pipeline),
     # regardless of application stage. Ordered by score so best candidates appear first.
     if status_filter == "hidden":
+        hidden_order = {
+            "score": "(COALESCE(pj.manager_score, 0) + COALESCE(pj.candidate_score, 0)) DESC",
+            "date":  "j.date_posted DESC, pj.added_at DESC",
+            "found": "pj.added_at DESC",
+            "company": "j.company ASC, j.title ASC",
+        }.get(sort_by, "(COALESCE(pj.manager_score, 0) + COALESCE(pj.candidate_score, 0)) DESC")
         query = f"""
             SELECT j.*, pj.match_score, pj.match_notes, pj.application_status,
                    pj.notes as user_notes, pj.added_at, pj.rank_at_discovery,
@@ -210,7 +216,7 @@ def profile_jobs(name):
             FROM profile_jobs pj
             JOIN jobs j ON pj.job_key = j.job_key
             WHERE pj.profile_id = ? AND pj.hidden=TRUE AND pj.manager_score IS NOT NULL
-            ORDER BY (COALESCE(pj.manager_score,0) + COALESCE(pj.candidate_score,0)) DESC
+            ORDER BY {hidden_order}
         """
         jobs = conn.execute(query, [profile["id"]]).fetchall()
 
