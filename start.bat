@@ -26,7 +26,7 @@ echo  Close this window to stop the server.
 echo.
 
 :: Open browser after a short delay (runs in background, doesn't block)
-start "" /b cmd /c "timeout /t 2 /nobreak >nul && start http://localhost:5000"
+start "" /b cmd /c "timeout /t 2 /nobreak >nul && start http://localhost:6868"
 
 call venv\Scripts\activate.bat
 python run_web.py

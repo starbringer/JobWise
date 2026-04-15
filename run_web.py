@@ -51,7 +51,23 @@ if __name__ == "__main__":
                 print(f" * Running on http://{local_ip}:{port}")
         except Exception:
             pass
-        serve(app, host=host, port=port, threads=4)
+        try:
+            serve(app, host=host, port=port, threads=4)
+        except OSError as e:
+            if "Address already in use" in str(e) or getattr(e, "errno", None) in (48, 98):
+                print(f"\nError: port {port} is already in use.")
+                print("JobWise may already be running — check for an existing terminal window.")
+                print(f"Or start on a different port:  python run_web.py --port 6869")
+                sys.exit(1)
+            raise
     except ImportError:
         # Waitress not installed — fall back to Flask dev server
-        app.run(host=host, port=port, debug=False, use_reloader=False)
+        try:
+            app.run(host=host, port=port, debug=False, use_reloader=False)
+        except OSError as e:
+            if "Address already in use" in str(e) or getattr(e, "errno", None) in (48, 98):
+                print(f"\nError: port {port} is already in use.")
+                print("JobWise may already be running — check for an existing terminal window.")
+                print(f"Or start on a different port:  python run_web.py --port 6869")
+                sys.exit(1)
+            raise

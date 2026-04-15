@@ -10,7 +10,7 @@ This guide covers everything you need to use the web UI day-to-day: browsing mat
 - **Windows** — double-click **`start.bat`** in the project folder
 - **Mac/Linux** — run `bash start.sh` in the project folder
 
-Your browser opens automatically at **http://localhost:5000**.
+Your browser opens automatically at **http://localhost:6868**.
 
 Or start it manually from a terminal (with the virtual environment active):
 

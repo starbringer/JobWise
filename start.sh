@@ -26,7 +26,7 @@ echo " Press Ctrl+C to stop the server."
 echo ""
 
 # Open browser after a short delay (background, non-blocking)
-(sleep 2 && python3 -c "import webbrowser; webbrowser.open('http://localhost:5000')") &
+(sleep 2 && python3 -c "import webbrowser; webbrowser.open('http://localhost:6868')") &
 
 source venv/bin/activate
 python run_web.py

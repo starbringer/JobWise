@@ -75,7 +75,7 @@ _MINIMAL_CONFIG = {
     "jobspy": {"sites": ["linkedin", "indeed"], "results_per_site": 25},
     "scheduler": {"enabled": False, "run_times": ["11:00", "18:00"], "profiles": []},
     "api": {"jsearch_reset_day": 18},
-    "web": {"host": "0.0.0.0", "port": 5000, "debug": False},
+    "web": {"host": "0.0.0.0", "port": 6868, "debug": False},
     "database": {"path": "data/jobs.db"},
     "profiles_dir": "profiles",
     "preferred_companies_file": "config/preferred_companies.txt",
